@@ -165,20 +165,56 @@ def obtener_ESF(empresa):
     return nuevo_esf
 
 def obtener_producto():
-    
-    
-    print("Iniciando nuevo producto")
-    print("Ingrese numero de la opcion:")
-    print("1. Nombre del producto")
-    print("2. Definir precios por semestre")
-    print("3. Definir ventas planeadas por semestre")    
-    print("4. Agregar Material (Se pueden agregar multiples materiales)")
-    print("5. Definir horas de mano de obra")
-    print("6. Definir costo de la hora por la mano de obra")
-    print("7. Definir inventario inicial del primer semestre")
-    print("8. Definir inventario final del segundo semestre")
-    print("9. Finalizar creacion de producto")
-    opcion = input("Opcion: ")
+    nuevo_producto= Producto()
+    while True:
+        print("Apartado de productos")
+        print("")
+        print("Ingrese numero de la opcion:")
+        print("1. Nombre del producto")
+        print("2. Definir precios por semestre")
+        print("3. Definir ventas planeadas por semestre")    
+        print("4. Agregar Material (Se pueden agregar multiples materiales)")
+        print("5. Definir horas de mano de obra")
+        print("6. Definir costo de la hora por la mano de obra")
+        print("7. Definir inventario inicial del primer semestre")
+        print("8. Definir inventario final del segundo semestre")
+        print("9. Finalizar creacion de producto")
+        opcion = input("Opcion: ")
+        match opcion:
+            case "1":
+                while True:
+                    nombre= str(input("Ingrese nombre del producto: ")).strip()
+                    if nombre == "":
+                        print("No puede dejar el nombre vacio")
+                    else:
+                        nuevo_producto.set_nombre(nombre)
+                        print("Nombre registrado")
+                        break
+            case "2":
+                while True:
+                    pass
+            case "3":
+                pass
+
+            case "4":
+                pass
+
+            case "5":
+                pass
+
+            case "6":
+                pass
+            
+            case "7":
+                pass
+            case "8":
+                pass
+            case "9":
+                pass
+
+
+
+
 
 
 def obtener_material():
@@ -212,7 +248,7 @@ def obtener_material():
                         print("Unidad ingresada")
                         break
                     except Exception as e:
-                        print("Error: {e}")
+                        print(f"Error: {e}")
             case "3":
                 while True:
                     req_mat = input("Ingrese cuanto se requiere del material")
@@ -237,7 +273,7 @@ def obtener_material():
                 while True:
                     inv_final = input("Ingrese cuanto hay de inventario del material al final del segundo semestre: ")
                     try:
-                        inv_inicial = Decimal(inv_final)
+                        inv_final = Decimal(inv_final)
                         nuevo_mat.set_inv_final(inv_final)
                         print("Inventario final ingresado")
                         break

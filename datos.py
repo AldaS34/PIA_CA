@@ -1,4 +1,3 @@
-import pandas as pd
 from tabulate import *
 from decimal import *
 
@@ -143,7 +142,7 @@ class ESF:
 
 
 class Producto:
-    def __init__(self,nombre,precioXsem,ventas_plan,materiales,horas_obra,costo_obra,inv_inicial,inv_final):
+    def __init__(self,nombre="None",precioXsem={},ventas_plan={},materiales=[],horas_obra=1,costo_obra={},inv_inicial=0,inv_final=0):
         self.nombre= nombre
         self.precioXsem = precioXsem
         self.ventas_plan = ventas_plan
@@ -165,6 +164,64 @@ class Producto:
     def get_materiales(self): 
         pass
 
+    def set_nombre(self, valor):
+         if  not isinstance(valor,(str)):
+            raise TypeError("Tiene que ser texto")
+         if valor == "":
+              raise ValueError("No puedes dejar el nombre vacio")
+         self.nombre = valor
+
+    def set_precioXsem(self, valor):
+         for valor in valor.values():
+              if not isinstance(valor,(int,float,Decimal)):
+                   raise TypeError("Debe ser un numero") 
+              if valor <= 0:
+                   raise ValueError("No puedes tener un precio menor a 0")
+         self.set_precioXsem = valor
+    
+    def set_ventas_plan(self,lista):
+         for valor in lista.values():
+              if not isinstance(valor,(int,float,Decimal)):
+                   raise TypeError("Debe ser un numero")
+              if valor <= 0:
+                   raise ValueError("No puedes tener un precio menor a 0")
+         self.ventas_plan = valor 
+    
+    def set_materiales(self,lista):
+         for valor in lista.values():
+              if not isinstance(valor, (Material)):
+                   raise TypeError("Debe ser de la clase material")
+         self.ventas_plan = lista
+
+    def set_horas_obra(self,valor):
+         if not isinstance(valor, (str,float, Decimal)):
+              raise TypeError("Debe ser un numero")
+         if valor <= 0:
+              raise ValueError("No pueden ser horas negativas o iguales a cero")
+         self.horas_obra = valor
+
+    def set_costo_obra(self, lista):
+        for valor in lista.values():
+              if not isinstance(valor,(int,float,Decimal)):
+                   raise TypeError("Debe ser un numero")
+              if valor <= 0:
+                   raise ValueError("No puedes tener un precio menor a 0")
+        self.ventas_plan = valor 
+
+    def set_inv_inicial(self,valor):
+         if not isinstance(valor,(int,float,Decimal)):
+              raise TypeError("Debe ser un numero")
+         if valor <= 0:
+              raise ValueError("No puedes tener un precio menor a 0")
+         self.inv_inicial = valor
+
+    def set_inv_final(self,valor):
+         if not isinstance(valor,(int,float,Decimal)):
+              raise TypeError("Debe ser un numero")
+         if valor <= 0:
+              raise ValueError("No puedes tener un precio menor a 0")
+         self.inv_final = valor
+         
 class Material:
     def __init__(self, nombre="None", unidad="None", req_mat=1, inv_inicial=0, inv_final=0, costoXsem={"sem1":0,"sem2":0}):
         self.nombre = nombre
