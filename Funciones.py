@@ -49,7 +49,7 @@ def validar_cantidad(cuenta):
 
 def nueva_cuenta():
     while True:
-        nombre = str(input("Nombre de la cuenta: ")).strip()
+        nombre = input("Nombre de la cuenta: ").strip()
         cantidad = validar_cantidad(nombre)
         print(f"{nombre}: ${cantidad}")
         while True:
@@ -165,6 +165,8 @@ def obtener_ESF(empresa):
     return nuevo_esf
 
 def obtener_producto():
+    materiales_cons = []
+    productos = []
     nuevo_producto= Producto()
     while True:
         print("Apartado de productos")
@@ -173,7 +175,7 @@ def obtener_producto():
         print("1. Nombre del producto")
         print("2. Definir precios por semestre")
         print("3. Definir ventas planeadas por semestre")    
-        print("4. Agregar Material (Se pueden agregar multiples materiales)")
+        print("4. Agregar Materiales")
         print("5. Definir horas de mano de obra")
         print("6. Definir costo de la hora por la mano de obra")
         print("7. Definir inventario inicial del primer semestre")
@@ -191,30 +193,125 @@ def obtener_producto():
                         print("Nombre registrado")
                         break
             case "2":
+                precios = {}
                 while True:
-                    pass
+                    precio_1 = input("Ingrese el precio del producto en su primer semestre: ")
+                    precio_2 = input("Ingrese el precio del producto en su segundo semestre: ")
+                    try:
+                        precios["sem1"] = Decimal(precio_1)
+                        precios["sem2"] = Decimal(precio_2)
+                        nuevo_producto.set_precioXsem() = precios  
+                        print("Precios ingresados") 
+                        break       
+                    except:
+                        print("Error en los datos")
             case "3":
-                pass
-
+                ventas = {}
+                while True:
+                    precio_1 = input("Ingrese la cantidad de productos que se espera vender en el primer semestre: ")
+                    precio_2 = input("Ingrese la cantidad de productos que se espera vender en el segundo semestre: ")
+                    try:
+                        ventas["sem1"] = Decimal(precio_1)
+                        ventas["sem2"] = Decimal(precio_2)
+                        nuevo_producto.set_ventas_plan(ventas)
+                        print("Ventas ingresadas")
+                        break
+                    except:
+                        print("Error en los datos")
             case "4":
-                pass
-
+                materiales = []
+                while True:
+                    print("Menu:")
+                    print("1. Agregar nuevo material")
+                    print("2. Usar material ya creado")
+                    materiales_creados(materiales_cons)
+                    opcion = input("Opcion: ")
+                    if opcion == "1":
+                           material = obtener_material()
+                           materiales_cons.append(material)
+                    elif opcion == "2":
+                            if len(materiales_cons) > 0:
+                                while True:
+                                    opcion = input("Cual material desea usar: ")
+                                    req = input("Cuanto se requiere del material: ")
+                                    try:
+                                        opcion = int(opcion)
+                                        if opcion <= len(materiales_cons) and opcion > 0:
+                                            material = materiales_cons[opcion]
+                                            material.req_mat = req
+                                        else:
+                                            print("Ingrese un numero que este dentro de la lista")
+                                    except:
+                                        print("Error en los datos")
+                            else:
+                                print("Aun no hay materiales registrados")
+                    materiales.append(material)
+                    print("¿Agregar otro material?")
+                    opcion = input("[S/N]: ").upper()
+                    if opcion == 'Y':
+                        print("Agregando otro material")
+                    elif opcion == 'N':
+                        nuevo_producto.set_materiales(materiales)
+                        print("Materiales agregados")
+                        break
+                    else:
+                        print("Ingrese S o N")
             case "5":
-                pass
-
+                while True:
+                    obra_horas = input("Ingrese las horas de mano de obra para realizar el producto: ")
+                    try:
+                        obra_horas = Decimal(obra_horas)
+                        nuevo_producto.set_horas_obra(obra_horas)
+                        print("Horas registradas")
+                        break
+                    except Exception as e:
+                        print(f"Error: {e}")
             case "6":
-                pass
-            
+                costosXhora = {}
+                while True:
+                    precio_1 = input("Ingrese el costo de mano de obra por hora en el primer semestre: ")
+                    precio_2 = input("Ingrese el costo de mano de obra por hora en el primer semestre: ")
+                    try:
+                        costosXhora["sem1"] = Decimal(precio_1)
+                        costosXhora["sem2"] = Decimal(precio_2)
+                        nuevo_producto.set_costo_obra(costosXhora)
+                        print("Costo de mano de obra registrado")
+                        break
+                    except:
+                        print("Error en los datos")
             case "7":
-                pass
+                while True:
+                    inv_inicial = input("Ingrese cuanto inventario se tiene del primer producto al inicio del primer semestre")
+                    try:
+                        inv_inicial = Decimal(inv_inicial)
+                        nuevo_producto.set_inv_inicial(inv_inicial)
+                        print("Inventario inicial registrado")
+                        break
+                    except:
+                        print("Error en los datos")
             case "8":
-                pass
+                while True:
+                    inv_final = input("Ingrese cuanto inventario se tiene del primer producto al final del segundo semestre")
+                    try:
+                        inv_final = Decimal(inv_inicial)
+                        nuevo_producto.set_inv_inicial(inv_final)
+                        print("Inventario inicial registrado")
+                        break
+                    except:
+                        print("Error en los datos")
             case "9":
-                pass
+                while True:
+                    print("Revisar datos del producto para terminar su registro")
+            case _:
+                print("Opcion no valida")
 
 
-
-
+def materiales_creados(materiales_cons):
+        print("Lista de materiales ya creados")
+        contador = 1
+        for material in materiales_cons:
+                print(f"    {contador}. {material.nombre}")
+                contador += 1
 
 
 def obtener_material():
@@ -305,3 +402,5 @@ def obtener_material():
                         print('Regresando al menu de Materiales')
                     else:
                         print("Ingrese S o N")
+            case _:
+                print("Opcion no valida")

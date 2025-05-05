@@ -152,6 +152,8 @@ class Producto:
         self.inv_inicial = inv_inicial
         self.inv_final = inv_final
 
+    def mostrar_producto():
+         pass
     def get_nombre(self):
         return self.nombre
 
@@ -171,13 +173,13 @@ class Producto:
               raise ValueError("No puedes dejar el nombre vacio")
          self.nombre = valor
 
-    def set_precioXsem(self, valor):
-         for valor in valor.values():
+    def set_precioXsem(self, lista):
+         for valor in lista.values():
               if not isinstance(valor,(int,float,Decimal)):
                    raise TypeError("Debe ser un numero") 
               if valor <= 0:
                    raise ValueError("No puedes tener un precio menor a 0")
-         self.set_precioXsem = valor
+         self.set_precioXsem = lista
     
     def set_ventas_plan(self,lista):
          for valor in lista.values():
@@ -185,7 +187,7 @@ class Producto:
                    raise TypeError("Debe ser un numero")
               if valor <= 0:
                    raise ValueError("No puedes tener un precio menor a 0")
-         self.ventas_plan = valor 
+         self.ventas_plan = lista
     
     def set_materiales(self,lista):
          for valor in lista.values():
@@ -206,7 +208,7 @@ class Producto:
                    raise TypeError("Debe ser un numero")
               if valor <= 0:
                    raise ValueError("No puedes tener un precio menor a 0")
-        self.ventas_plan = valor 
+        self.ventas_plan = lista
 
     def set_inv_inicial(self,valor):
          if not isinstance(valor,(int,float,Decimal)):
