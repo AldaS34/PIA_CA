@@ -232,6 +232,8 @@ def obtener_productos():
                     if opcion == "1":
                            material = obtener_material()
                            materiales_cons.append(material)
+                           materiales.append(material)
+                           break
                     elif opcion == "2":
                             if len(materiales_cons) > 0:
                                 while True:
@@ -242,13 +244,18 @@ def obtener_productos():
                                         if opcion <= len(materiales_cons) and opcion > 0:
                                             material = materiales_cons[opcion]
                                             material.req_mat = req
+                                            materiales.append(material)
+                                            break
                                         else:
                                             print("Ingrese un numero que este dentro de la lista")
                                     except:
                                         print("Error en los datos")
+                                break
                             else:
                                 print("Aun no hay materiales registrados")
-                    materiales.append(material)
+                    else:
+                        print("Ingerse una opcion valida")
+                while True:
                     print("¿Agregar otro material?")
                     opcion = input("[S/N]: ").upper()
                     if opcion == 'Y':
@@ -428,6 +435,7 @@ def obtener_material():
                         return nuevo_mat
                     elif opcion == 'N':
                         print('Regresando al menu de Materiales')
+                        break
                     else:
                         print("Ingrese S o N")
             case _:

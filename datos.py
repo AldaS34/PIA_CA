@@ -201,7 +201,7 @@ class Producto:
          self.ventas_plan = lista
     
     def set_materiales(self,lista):
-         for valor in lista.values():
+         for valor in lista:
               if not isinstance(valor, (Material)):
                    raise TypeError("Debe ser de la clase material")
          self.ventas_plan = lista
