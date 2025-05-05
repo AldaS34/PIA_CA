@@ -142,7 +142,7 @@ class ESF:
 
 
 class Producto:
-    def __init__(self,nombre="None",precioXsem={},ventas_plan={},materiales=[],horas_obra=1,costo_obra={},inv_inicial=0,inv_final=0):
+    def __init__(self,nombre="None",precioXsem={'sem1':1,'sem2':1},ventas_plan={'sem1':1,'sem2':1},materiales=[],horas_obra=1,costo_obra={'sem1':1,'sem2':1},inv_inicial=0,inv_final=0):
         self.nombre= nombre
         self.precioXsem = precioXsem
         self.ventas_plan = ventas_plan
@@ -152,8 +152,19 @@ class Producto:
         self.inv_inicial = inv_inicial
         self.inv_final = inv_final
 
-    def mostrar_producto():
-         pass
+    def mostrar_producto(self):
+         contador = 1
+         print(f"{self.nombre}")
+         print(f"Precios, Primer semestre: {self.precioXsem['sem1']} Segundo semestre: {self.precioXsem['sem2']}")
+         print(f"Ventas, Primer semestre: {self.ventas_plan['sem1']} Segundo semestre: {self.ventas_plan['sem2']}")
+         print("Materiales: ")
+         for material in self.materiales:
+                print(f"{contador}. {material.nombre}")
+                contador += 1
+         print(f"Horas requeridas para elaboracion: {self.horas_obra}")
+         print(f"Costo de mano de obra, Primer semestre: {self.costo_obra['sem1']} Segundo semestre: {self.costo_obra['sem2']}")
+         print(f"Inventario inicial: {self.inv_inicial} Inventario final: {self.inv_final}")
+
     def get_nombre(self):
         return self.nombre
 

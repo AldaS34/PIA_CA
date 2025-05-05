@@ -154,7 +154,7 @@ def obtener_ESF(empresa):
         nuevo_esf.mostrar_ESF(empresa)
         confirmacion = nuevo_esf.balance_cuadrado()
         if confirmacion:
-            opcion = input("Desea registrar los datos [S/N]").upper()
+            opcion = input("Desea registrar los datos [S/N]: ").upper()
             if opcion == 'S':
                 print("Datos registrados")
                 break
@@ -162,9 +162,11 @@ def obtener_ESF(empresa):
                 print("Se registraran los datos de nuevo")
             else:
                 print("Ingrese S o N")
+        else: 
+            print("Su balance no cuadra, revise informacion")
     return nuevo_esf
 
-def obtener_producto():
+def obtener_productos():
     materiales_cons = []
     productos = []
     nuevo_producto= Producto()
@@ -181,6 +183,7 @@ def obtener_producto():
         print("7. Definir inventario inicial del primer semestre")
         print("8. Definir inventario final del segundo semestre")
         print("9. Finalizar creacion de producto")
+        print("10. Terminar seccion de productos (Seleccionar una vez haya creado todos sus productos)")
         opcion = input("Opcion: ")
         match opcion:
             case "1":
@@ -200,7 +203,7 @@ def obtener_producto():
                     try:
                         precios["sem1"] = Decimal(precio_1)
                         precios["sem2"] = Decimal(precio_2)
-                        nuevo_producto.set_precioXsem() = precios  
+                        nuevo_producto.set_precioXsem(precios)
                         print("Precios ingresados") 
                         break       
                     except:
@@ -302,6 +305,31 @@ def obtener_producto():
             case "9":
                 while True:
                     print("Revisar datos del producto para terminar su registro")
+                    nuevo_producto.mostrar_producto()
+                    separador()
+                    print("1. Guardar producto")
+                    print("2. Regresar a menu de creacion de producto")
+                    opcion = input("Opcion: ")
+                    if opcion == "1":
+                        productos.append(nuevo_producto)
+                        print("Producto agregado")
+                    elif opcion == "2":
+                        print("Regresando al menu")
+                        break
+                    else:
+                        print("Ingrese alguna de las opciones disponibles")
+                    print("Desea agregar otro producto o terminar con la seccion de productos")
+            case "10":
+                    print("Desea agregar otro producto o terminar con la seccion de productos")
+                    for producto in productos:
+                        print(f"-{producto.nombre}")
+                    opcion = input("[S/N]: ").upper()
+                    if opcion == "N":
+                        print("Productos registrados")
+                        return productos
+                    elif opcion == "S":
+                        print("Regresando a crear un nuevo producto")
+                        nuevo_producto = Producto()
             case _:
                 print("Opcion no valida")
 
