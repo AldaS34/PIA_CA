@@ -422,3 +422,6 @@ class Extras:
 
     def set_isr_a_pagar(self, valores):
         self.isr_a_pagar = valores
+
+    def futuro():
+         pass

@@ -21,5 +21,5 @@ while True:
                 separador()
 
 
-print("HOla")
+
 
