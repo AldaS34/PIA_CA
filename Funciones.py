@@ -182,8 +182,8 @@ def obtener_productos():
         print("6. Definir costo de la hora por la mano de obra")
         print("7. Definir inventario inicial del primer semestre")
         print("8. Definir inventario final del segundo semestre")
-        print("9. Finalizar creacion de producto")
-        print("10. Terminar seccion de productos (Seleccionar una vez haya creado todos sus productos)")
+        print("9. Registrar producto")
+        print("10. Terminar registro de productos (Seleccionar una vez haya creado todos sus productos)")
         opcion = input("Opcion: ")
         match opcion:
             case "1":
@@ -243,7 +243,7 @@ def obtener_productos():
                                         opcion = int(opcion)
                                         if opcion <= len(materiales_cons) and opcion > 0:
                                             material = materiales_cons[opcion]
-                                            material.req_mat = req
+                                            material.req_mat = Decimal(req)
                                             materiales.append(material)
                                             break
                                         else:
@@ -344,10 +344,12 @@ def obtener_productos():
 def materiales_creados(materiales_cons):
         print("Lista de materiales ya creados")
         contador = 1
-        for material in materiales_cons:
-                print(f"    {contador}. {material.nombre}")
-                contador += 1
-
+        if len(materiales_cons) == 0:
+            print("N/A")
+        else:
+            for material in materiales_cons:
+                    print(f"    {contador}. {material.nombre}")
+                    contador += 1
 
 def obtener_material():
     nuevo_mat= Material()
@@ -383,7 +385,7 @@ def obtener_material():
                         print(f"Error: {e}")
             case "3":
                 while True:
-                    req_mat = input("Ingrese cuanto se requiere del material")
+                    req_mat = input("Ingrese cuanto se requiere del material: ")
                     try:
                         req_mat = Decimal(req_mat)
                         nuevo_mat.set_req_mat(req_mat)
@@ -440,3 +442,4 @@ def obtener_material():
                         print("Ingrese S o N")
             case _:
                 print("Opcion no valida")
+

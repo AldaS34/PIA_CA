@@ -251,48 +251,48 @@ class Material:
          print(f"Su costo en el primer semestre es {self.costoXsem["sem1"]}")
          print(f"Su costo en el segundo semestre es {self.costoXsem["sem2"]}")
 
-
-    def set_nombre(self, valor):
+    def validar_cadena(self,valor):
         if not isinstance(valor,(str)):
              raise TypeError("Tiene que ser texto")
         if valor == "":
             raise ValueError("No puedes dejar el nombre vacio")
-        else:
-            self.nombre = valor
     
-
-    def set_unidad(self, valor):
-        if not isinstance(valor,(str)):
-             raise TypeError ("Tiene que ser texto")
-        if valor == "":
-            raise ValueError("No puedes dejar el nombre vacio")
-        else:
-            self.unidad = valor  
-
-
-    def set_req_mat(self,valor):
+    def validar_numero(self,valor):
         if not isinstance(valor, (int,float,Decimal)):
                 raise TypeError("Debe ser un numero")
         if valor <= 0:
                 raise ValueError("No puede ser cero o menor")
+
+    def set_nombre(self, valor):
+        self.validar_cadena()
+        self.nombre = valor
+    
+
+    def set_unidad(self, valor):
+        self.validar_cadena(valor)
+        self.unidad = valor  
+
+
+    def set_req_mat(self,valor):
+        self.validar_numero(valor)
         self.req_mat = valor
 
 
     def set_inv_inicial(self, valor):
-        if not isinstance(valor,(int,float,Decimal)):
+        if not isinstance(valor, (int,float,Decimal)):
                 raise TypeError("Debe ser un numero")
         if valor < 0:
                 raise ValueError("No puede ser cero o menor")
+
         self.inv_inicial = valor
 
 
     def set_inv_final(self, valor):
-        if not isinstance(valor,(int,float,Decimal)):
+        if not isinstance(valor, (int,float,Decimal)):
                 raise TypeError("Debe ser un numero")
         if valor < 0:
                 raise ValueError("No puede ser cero o menor")
         self.inv_final = valor
-
 
     def set_costoXsem(self, lista):
         for valor in lista.values():
@@ -302,3 +302,123 @@ class Material:
                     raise ValueError("No puede ser cero o menor")
         self.costoXsem = lista
 
+class GastosAyV:
+    def __init__(self,depreciacion,sueldosYsal,comisiones,varios,intereses):
+        self.depreciacion = depreciacion
+        self.sueldosYsal = sueldosYsal
+        self.comisiones = comisiones
+        self.varios = varios
+        self.intereses = intereses
+
+    def validar_valores(self, valores):
+        for cantidad in valores.values():
+            if not isinstance(cantidad, (int, float, Decimal)):
+                raise TypeError("Debe ser un número")
+            if cantidad < 0:
+                raise ValueError("No puede ser cero o menor")
+
+    def set_depreciacion(self,valores):
+        self.validar_valores(valores)
+        self.depreciacion = valores
+    
+    def set_sueldosYsal(self,valores):
+        self.validar_valores(valores)
+        self.sueldosYsal = valores
+    
+    def set_comisiones(self,valor):
+        if not isinstance(valor,(int,float,Decimal)):
+            raise TypeError("Debe ser un numero")
+        if valor < 0:
+            raise ValueError("No puede ser cero o menor")
+        self.comisiones = valor
+
+    def set_varios(self,valores):
+        self.validar_valores(valores) 
+        self.varios = valores
+            
+    def set_intereses(self,valores):
+        self.validar_valores(valores) 
+        self.set_intereses = valores
+
+class GIF:
+    def __init__(self,depreciacion,seguros,mantenimiento,energeticos,varios):
+        self.depreciacion = depreciacion
+        self.seguros = seguros
+        self.mantenimiento = mantenimiento
+        self.energeticos = energeticos
+        self.varios = varios
+
+    def validar_valores(self, valores):
+        for cantidad in valores.values():
+            if not isinstance(cantidad, (int, float, Decimal)):
+                raise TypeError("Debe ser un número")
+            if cantidad < 0:
+                raise ValueError("No puede ser cero o menor")
+
+    def set_depreciacion(self,valores):
+        self.validar_valores(valores)
+        self.depreciacion = valores
+    
+    def set_seguros(self,valores):
+        self.validar_valores(valores)
+        self.seguros = valores
+    
+    def set_mantenimiento(self,valores):
+        self.validar_valores(valores)
+        self.mantenimiento = valores
+
+    def set_energeticos(self,valores):
+        self.validar_valores(valores) 
+        self.energeticos = valores
+            
+    def set_varios(self,valores):
+        self.validar_valores(valores)
+        self.varios = valores
+
+
+class Extras:
+    def __init__(self, cuentas_extra, isr, ptu, cobrar_clientes,
+                 cobrar_ventas, pagar_prov, pagar_comp, isr_a_pagar):
+        self.cuentas_extra = cuentas_extra
+        self.ist = isr
+        self.ptu = ptu
+        self.cobrar_clientes =cobrar_clientes
+        self.cobrar_ventas = cobrar_ventas
+        self.pagar_prov = pagar_prov
+        self.pagar_comp = pagar_comp
+        self.isr_a_pagar = isr_a_pagar
+
+            
+    def validar_numero(self,valor):
+        if not isinstance(valor, (int,float,Decimal)):
+                raise TypeError("Debe ser un numero")
+        if valor <= 0:
+                raise ValueError("No puede ser cero o menor")
+
+
+    def set_isr(self, valores):
+        self.validar_numero(valores)
+        self.isr = valores
+
+    def set_ptu(self, valores):
+        self.validar_numero(valores)
+        self.ptu = valores
+
+    def set_cobrar_clientes(self, valores):
+        self.validar_numero(valores)
+        self.cobrar_clientes = valores
+
+    def set_cobrar_ventas(self, valores):
+        self.validar_numero(valores)
+        self.cobrar_ventas = valores
+
+    def set_pagar_prov(self, valores):
+        self.validar_numero(valores)
+        self.pagar_prov = valores
+
+    def set_pagar_comp(self, valores):
+        self.validar_numero(valores)
+        self.pagar_comp = valores
+
+    def set_isr_a_pagar(self, valores):
+        self.isr_a_pagar = valores
