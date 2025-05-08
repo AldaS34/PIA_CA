@@ -43,7 +43,7 @@ def cantidades_SoA(periodo,cuenta):
             print("Datos ingresados no permitidos")
     else:
         try:
-            valor1 = valor1 = Decimal(input("Ingrese cuanto vale anualmente: "))
+            valor1 = Decimal(input("Ingrese cuanto vale anualmente: "))
             lista_temp["Primer semestre"] = valor1
         except:
             print("Datos ingresados no permitidos")
@@ -101,7 +101,7 @@ def nueva_cuenta():
             opcion = input("¿Es correcto? [S/N]")
             if opcion.upper() == 'S':
                 return nombre, cantidad
-            elif opcion.upper == 'N':
+            elif opcion.upper() == 'N':
                 print("Reingresa los datos")
                 separador()
                 break
@@ -511,6 +511,7 @@ def obtener_gastosAyV():
     periodo = anual_o_semestral()
     cantidad = cantidades_SoA(periodo, "Intereses por obligaciones")
     gastos_ayv.set_intereses(cantidad)
+    gastos_ayv.mostrar_gastosAyV()
     return gastos_ayv
 
 
@@ -537,8 +538,39 @@ def obtener_gif():
     periodo = anual_o_semestral()
     cantidad = cantidades_SoA(periodo, "Intereses por obligaciones")
     gif.set_intereses(cantidad)
+    gif.mostrar_gif()
     return gif
 
 def obtener_extras():
     extras = Extras()
-    
+    print("==== GASTOS INDIRECTOS DE FABRICACION ====")
+    n_cuentas = {}
+    while True:
+        print("Registrar adquiciciones nuevas")
+        cuenta, cantidad =nueva_cuenta()
+        n_cuentas[cuenta] = cantidad
+        print("Presione tecla 'Enter' si quiere parar de ingresar nuevas adquiciciones")
+        opcion = input()
+        if opcion == "":
+            extras.set_cuentas_extra(n_cuentas)
+            break
+    print("Registrar tasa de ISR")
+    cantidad = obtener_porcentaje()
+    extras.set_isr(cantidad)
+    print("Registrar tasa de PTU")
+    cantidad = obtener_porcentaje()
+    extras.set_ptu(cantidad)
+    print("Regitrar porcentaje que se cobrara del saldo de clientes")
+    cantidad = obtener_porcentaje()
+    extras.set_cobrar_clientes(cantidad)
+    print("Registrar porcentaje que se cobrara de ventas presupuestadas")
+    cantidad = obtener_porcentaje()
+    extras.set_cobrar_ventas(cantidad)
+    print("Registrar porcentaje que se pagara del saldo de proveedores ")
+    cantidad = obtener_porcentaje()
+    extras.set_pagar_prov(cantidad)
+    print("Registrar porcentaje que se pagara de compras presupuestadas ")
+    cantidad = obtener_porcentaje()
+    extras.set_pagar_comp(cantidad)
+    extras.mostrar_extras()
+    return extras

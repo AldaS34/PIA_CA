@@ -210,7 +210,7 @@ class Producto:
                    raise TypeError("Debe ser un numero") 
               if valor <= 0:
                    raise ValueError("No puedes tener un precio menor a 0")
-         self.set_precioXsem = lista
+         self.precioXsem = lista
     
     def set_ventas_plan(self,lista):
          for valor in lista.values():
@@ -268,8 +268,8 @@ class Material:
          print(f"{self.nombre} se mide en {self.unidad}")
          print(f"Tiene un requerimiento de {self.req_mat}")
          print(f"Primer semestre al inicio tiene {self.inv_inicial} y al final del segundo {self.inv_final}")
-         print(f"Su costo en el primer semestre es {self.costoXsem["sem1"]}")
-         print(f"Su costo en el segundo semestre es {self.costoXsem["sem2"]}")
+         print(f"Su costo en el primer semestre es {self.costoXsem['sem1']}")
+         print(f"Su costo en el segundo semestre es {self.costoXsem['sem2']}")
 
     def validar_cadena(self,valor):
         if not isinstance(valor,(str)):
@@ -330,6 +330,21 @@ class GastosAyV:
         self.varios = varios
         self.intereses = intereses
 
+    def mostrar_gastosAyV(self):
+         for periodo, cantidad in self.depreciacion.items():
+              print("Depreciacion")
+              print(f"{periodo}: {cantidad}")
+         for periodo, cantidad in self.sueldosYsal.items():
+              print("Sueldos y salarios")
+              print(f"{periodo}: {cantidad}")
+         print(f"Comisiones: {100*self.comisiones}%")
+         for periodo, cantidad in self.varios.items():
+              print("Varios")
+              print(f"{periodo}: {cantidad}")
+         for periodo, cantidad in self.intereses.items():
+              print("Intereses")
+              print(f"{periodo}: {cantidad}")
+        
     def validar_valores(self, valores):
         for cantidad in valores.values():
             if not isinstance(cantidad, (int, float, Decimal)):
@@ -368,6 +383,23 @@ class GIF:
         self.energeticos = energeticos
         self.varios = varios
 
+    def mostrar_gif(self):
+         for periodo, cantidad in self.depreciacion.items():
+              print("Depreciacion")
+              print(f"{periodo}: {cantidad}")
+         for periodo, cantidad in self.seguros.items():
+              print("Seguros")
+              print(f"{periodo}: {cantidad}")
+         for periodo, cantidad in self.mantenimiento.items():
+              print("Mantenimiento")
+              print(f"{periodo}: {cantidad}")
+         for periodo, cantidad in self.energeticos.items():
+              print("Energéticos")
+              print(f"{periodo}: {cantidad}")
+         for periodo, cantidad in self.varios.items():
+              print("Varios")
+              print(f"{periodo}: {cantidad}")
+
     def validar_valores(self, valores):
         for cantidad in valores.values():
             if not isinstance(cantidad, (int, float, Decimal)):
@@ -397,8 +429,8 @@ class GIF:
 
 
 class Extras:
-    def __init__(self=0, cuentas_extra=0, isr=0, ptu=0, cobrar_clientes=0,
-                 cobrar_ventas=0, pagar_prov=0, pagar_comp=0, isr_a_pagar=0):
+    def __init__(self, cuentas_extra={}, isr=0, ptu=0, cobrar_clientes=0,
+                 cobrar_ventas=0, pagar_prov=0, pagar_comp=0):
         self.cuentas_extra = cuentas_extra
         self.isr = isr
         self.ptu = ptu
@@ -406,15 +438,26 @@ class Extras:
         self.cobrar_ventas = cobrar_ventas
         self.pagar_prov = pagar_prov
         self.pagar_comp = pagar_comp
-        self.isr_a_pagar = isr_a_pagar
 
-            
+    def mostrar_extras(self):
+        for periodo, cantidad in self.cuentas_extra.items():
+              print("Adquisiciones")
+              print(f"{periodo}: {cantidad}")
+        print(f"Porcentaje ISR: {self.isr}%")
+        print(f"Porcentaje PTU: {self.ptu}%")
+        print(f"Se cobrará el {self.cobrar_clientes}% del saldo de clientes")
+        print(f"Se cobrará el {self.cobrar_ventas}% de las ventas presupuestadas")
+        print(f"Se pagará el {self.pagar_prov}% del saldo de proveedores")
+        print(f"Se pagará el {self.pagar_comp}% de las compras presupuestadas")
+
     def validar_numero(self,valor):
         if not isinstance(valor, (int,float,Decimal)):
                 raise TypeError("Debe ser un numero")
         if valor < 0:
                 raise ValueError("No puede ser cero o menor")
 
+    def set_cuentas_extra(self, valor):
+         self.cuentas_extra = valor
 
     def set_isr(self, valores):
         self.validar_numero(valores)
@@ -443,3 +486,12 @@ class Extras:
     def set_isr_a_pagar(self, valores):
         self.isr_a_pagar = valores
 
+class Cedulas:
+     def __init__(self, empresa, esf,productos,gastosAyV,gif,extras):
+          self.empresa = empresa
+          self.esf = esf
+          self.productos = productos
+          self.gastosAyV = gastosAyV
+          self.gif = gif
+          self.extras = extras
+        
