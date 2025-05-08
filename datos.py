@@ -153,17 +153,37 @@ class Producto:
         self.inv_final = inv_final
 
     def mostrar_producto(self):
-         contador = 1
-         print(f"{self.nombre}")
-         print(f"Precios, Primer semestre: {self.precioXsem['sem1']} Segundo semestre: {self.precioXsem['sem2']}")
-         print(f"Ventas, Primer semestre: {self.ventas_plan['sem1']} Segundo semestre: {self.ventas_plan['sem2']}")
-         print("Materiales: ")
-         for material in self.materiales:
-                print(f"{contador}. {material.nombre}")
-                contador += 1
-         print(f"Horas requeridas para elaboracion: {self.horas_obra}")
-         print(f"Costo de mano de obra, Primer semestre: {self.costo_obra['sem1']} Segundo semestre: {self.costo_obra['sem2']}")
-         print(f"Inventario inicial: {self.inv_inicial} Inventario final: {self.inv_final}")
+        print("=" * 50)
+        print(f"Producto: {self.nombre}")
+        print("-" * 50)
+        
+        print("Precios:")
+        print(f"  - Primer semestre : {self.precioXsem['sem1']}")
+        print(f"  - Segundo semestre: {self.precioXsem['sem2']}")
+        print()
+        
+        print("Ventas planificadas:")
+        print(f"  - Primer semestre : {self.ventas_plan['sem1']}")
+        print(f"  - Segundo semestre: {self.ventas_plan['sem2']}")
+        print()
+        
+        print("Materiales:")
+        for idx, material in enumerate(self.materiales, start=1):
+            print(f"  {idx}. {material.nombre}")
+        print()
+        
+        print(f"Horas requeridas para elaboración: {self.horas_obra}")
+        print()
+        
+        print("Costo de mano de obra:")
+        print(f"  - Primer semestre : {self.costo_obra['sem1']}")
+        print(f"  - Segundo semestre: {self.costo_obra['sem2']}")
+        print()
+        
+        print("Inventarios:")
+        print(f"  - Inicial: {self.inv_inicial}")
+        print(f"  - Final  : {self.inv_final}")
+        print("=" * 50)
 
     def get_nombre(self):
         return self.nombre
@@ -264,7 +284,7 @@ class Material:
                 raise ValueError("No puede ser cero o menor")
 
     def set_nombre(self, valor):
-        self.validar_cadena()
+        self.validar_cadena(valor)
         self.nombre = valor
     
 
@@ -303,7 +323,7 @@ class Material:
         self.costoXsem = lista
 
 class GastosAyV:
-    def __init__(self,depreciacion,sueldosYsal,comisiones,varios,intereses):
+    def __init__(self,depreciacion={},sueldosYsal={},comisiones=0,varios={},intereses={}):
         self.depreciacion = depreciacion
         self.sueldosYsal = sueldosYsal
         self.comisiones = comisiones
@@ -338,10 +358,10 @@ class GastosAyV:
             
     def set_intereses(self,valores):
         self.validar_valores(valores) 
-        self.set_intereses = valores
+        self.intereses = valores
 
 class GIF:
-    def __init__(self,depreciacion,seguros,mantenimiento,energeticos,varios):
+    def __init__(self,depreciacion={},seguros={},mantenimiento={},energeticos={},varios={}):
         self.depreciacion = depreciacion
         self.seguros = seguros
         self.mantenimiento = mantenimiento
@@ -377,10 +397,10 @@ class GIF:
 
 
 class Extras:
-    def __init__(self, cuentas_extra, isr, ptu, cobrar_clientes,
-                 cobrar_ventas, pagar_prov, pagar_comp, isr_a_pagar):
+    def __init__(self=0, cuentas_extra=0, isr=0, ptu=0, cobrar_clientes=0,
+                 cobrar_ventas=0, pagar_prov=0, pagar_comp=0, isr_a_pagar=0):
         self.cuentas_extra = cuentas_extra
-        self.ist = isr
+        self.isr = isr
         self.ptu = ptu
         self.cobrar_clientes =cobrar_clientes
         self.cobrar_ventas = cobrar_ventas
@@ -392,7 +412,7 @@ class Extras:
     def validar_numero(self,valor):
         if not isinstance(valor, (int,float,Decimal)):
                 raise TypeError("Debe ser un numero")
-        if valor <= 0:
+        if valor < 0:
                 raise ValueError("No puede ser cero o menor")
 
 
@@ -423,5 +443,3 @@ class Extras:
     def set_isr_a_pagar(self, valores):
         self.isr_a_pagar = valores
 
-    def futuro():
-         pass

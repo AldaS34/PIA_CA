@@ -13,6 +13,51 @@ def menu():
 def separador():
     print('*'*10)
 
+def anual_o_semestral():
+    while True:
+        print("Ingrese el numero de la opcion que corresponda")
+        print("Es semestral o anual")
+        print("1. Anual")
+        print("2. Semestral")
+        opcion = input("Opcion: ")
+        if opcion == "1":
+            plazo = "anual"
+            break
+        elif opcion == "2":
+            plazo = "semestral"
+            break
+        else:
+            print("Ingrese una opcion valida")
+    return plazo
+
+def cantidades_SoA(periodo,cuenta):
+    lista_temp = {}
+    if periodo == "semestral":
+        try:
+            print(cuenta)
+            valor1 = Decimal(input("Ingrese cuanto vale en el primer semestre: "))
+            valor2 = Decimal(input("Ingrese cuanto vale en el segundo semestre: "))
+            lista_temp["Primer semestre"] = valor1
+            lista_temp["Segundo semestre"] = valor2
+        except:
+            print("Datos ingresados no permitidos")
+    else:
+        try:
+            valor1 = valor1 = Decimal(input("Ingrese cuanto vale anualmente: "))
+            lista_temp["Primer semestre"] = valor1
+        except:
+            print("Datos ingresados no permitidos")
+    return lista_temp
+
+def obtener_porcentaje():
+    print("Ingrese el porcentaje requerido(Ingrese como numero entero)")
+    porcentaje = input(": ")
+    try:
+        porcentaje = Decimal(porcentaje * 0.01)
+        return porcentaje
+    except:
+        print("Datos ingresados invalidos")
+
 def obtener_empresa():
     while True:    
         print("Dato de la empresa")
@@ -242,7 +287,7 @@ def obtener_productos():
                                     try:
                                         opcion = int(opcion)
                                         if opcion <= len(materiales_cons) and opcion > 0:
-                                            material = materiales_cons[opcion]
+                                            material = materiales_cons[opcion-1]
                                             material.req_mat = Decimal(req)
                                             materiales.append(material)
                                             break
@@ -303,7 +348,7 @@ def obtener_productos():
                 while True:
                     inv_final = input("Ingrese cuanto inventario se tiene del primer producto al final del segundo semestre")
                     try:
-                        inv_final = Decimal(inv_inicial)
+                        inv_final = Decimal(inv_final)
                         nuevo_producto.set_inv_inicial(inv_final)
                         print("Inventario inicial registrado")
                         break
@@ -443,3 +488,57 @@ def obtener_material():
             case _:
                 print("Opcion no valida")
 
+
+def obtener_gastosAyV():
+    gastos_ayv = GastosAyV()
+    print("==== INGRESO DE GASTOS DE ADMINISTRACIÓN Y VENTAS ====")
+    print("Ingresar datos Depreciacion")
+    periodo = anual_o_semestral()
+    cantidad = cantidades_SoA(periodo,"Depreciacion" )
+    gastos_ayv.set_depreciacion(cantidad)
+    print("Ingresar datos para sueldos y salarios")
+    periodo = anual_o_semestral()
+    cantidad = cantidades_SoA(periodo, "Sueldos y salarios")
+    gastos_ayv.set_sueldosYsal(cantidad)
+    print("Ingresar datos del porcentaje de comisiones")
+    comisiones = obtener_porcentaje()
+    gastos_ayv.set_comisiones(comisiones)
+    print("Ingresar los datos de gastos varios")
+    periodo = anual_o_semestral()
+    cantidad = cantidades_SoA(periodo, "Varios")
+    gastos_ayv.set_varios(cantidad)
+    print("Ingresar los datos de intereses por obligaciones")
+    periodo = anual_o_semestral()
+    cantidad = cantidades_SoA(periodo, "Intereses por obligaciones")
+    gastos_ayv.set_intereses(cantidad)
+    return gastos_ayv
+
+
+def obtener_gif():
+    gif = GIF()
+    print("==== GASTOS INDIRECTOS DE FABRICACION ====")
+    print("Ingresar datos Depreciacion")
+    periodo = anual_o_semestral()
+    cantidad = cantidades_SoA(periodo,"Depreciacion" )
+    gif.set_depreciacion(cantidad)
+    print("Ingresar datos para seguros")
+    periodo = anual_o_semestral()
+    cantidad = cantidades_SoA(periodo, "Seguros")
+    gif.set_seguros(cantidad)
+    print("Ingresar datos de mantenimieto")
+    periodo = anual_o_semestral()
+    cantidad = cantidades_SoA(periodo, "Mantenimiento")
+    gif.set_mantenimiento(cantidad)
+    print("Ingresar los datos de Energéticos")
+    periodo = anual_o_semestral()
+    cantidad = cantidades_SoA(periodo, "Energéticos")
+    gif.set_varios(cantidad)
+    print("Ingresar los datos de intereses por obligaciones")
+    periodo = anual_o_semestral()
+    cantidad = cantidades_SoA(periodo, "Intereses por obligaciones")
+    gif.set_intereses(cantidad)
+    return gif
+
+def obtener_extras():
+    extras = Extras()
+    
