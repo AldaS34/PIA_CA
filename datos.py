@@ -265,11 +265,13 @@ class Material:
         self.costoXsem = costoXsem  
 
     def info_material(self):
-         print(f"{self.nombre} se mide en {self.unidad}")
-         print(f"Tiene un requerimiento de {self.req_mat}")
-         print(f"Primer semestre al inicio tiene {self.inv_inicial} y al final del segundo {self.inv_final}")
-         print(f"Su costo en el primer semestre es {self.costoXsem['sem1']}")
-         print(f"Su costo en el segundo semestre es {self.costoXsem['sem2']}")
+        print(f"Material:               {self.nombre}")
+        print(f"Unidad de medida:      {self.unidad}")
+        print(f"Requerimiento:         {self.req_mat}")
+        print(f"Inventario inicial S1: {self.inv_inicial}")
+        print(f"Inventario final S2:   {self.inv_final}")
+        print(f"Costo S1:              ${self.costoXsem['sem1']}")
+        print(f"Costo S2:              ${self.costoXsem['sem2']}")
 
     def validar_cadena(self,valor):
         if not isinstance(valor,(str)):

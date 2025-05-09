@@ -10,13 +10,22 @@ def menu():
     print("3. Eliminar Presupuesto")
     print("4. Salir")
 
+def confirmar_respuesta():
+    while True:
+        respuesta = input("¿Deseas continuar? (S/N): ").strip().upper()
+        if respuesta == 'S':
+            return True
+        elif respuesta == 'N':
+            return False
+        else:
+            print("Respuesta no válida. Por favor ingresa 'S' o 'N'.")
+
 def separador():
     print('*'*10)
 
 def anual_o_semestral():
     while True:
-        print("Ingrese el numero de la opcion que corresponda")
-        print("Es semestral o anual")
+        print("Es anual o semestral")
         print("1. Anual")
         print("2. Semestral")
         opcion = input("Opcion: ")
@@ -32,35 +41,39 @@ def anual_o_semestral():
 
 def cantidades_SoA(periodo,cuenta):
     lista_temp = {}
-    if periodo == "semestral":
-        try:
-            print(cuenta)
-            valor1 = Decimal(input("Ingrese cuanto vale en el primer semestre: "))
-            valor2 = Decimal(input("Ingrese cuanto vale en el segundo semestre: "))
-            lista_temp["Primer semestre"] = valor1
-            lista_temp["Segundo semestre"] = valor2
-        except:
-            print("Datos ingresados no permitidos")
-    else:
-        try:
-            valor1 = Decimal(input("Ingrese cuanto vale anualmente: "))
-            lista_temp["Primer semestre"] = valor1
-        except:
-            print("Datos ingresados no permitidos")
+    while True:
+        if periodo == "semestral":
+            try:
+                print(cuenta)
+                valor1 = Decimal(input("Ingrese cuanto vale en el primer semestre: "))
+                valor2 = Decimal(input("Ingrese cuanto vale en el segundo semestre: "))
+                lista_temp["Primer semestre"] = valor1
+                lista_temp["Segundo semestre"] = valor2
+                break
+            except:
+                print("Datos ingresados no permitidos")
+        else:
+            try:
+                valor1 = Decimal(input("Ingrese cuanto vale anualmente: "))
+                lista_temp["Anuales"] = valor1
+                break
+            except:
+                print("Datos ingresados no permitidos")
     return lista_temp
 
 def obtener_porcentaje():
-    print("Ingrese el porcentaje requerido(Ingrese como numero entero)")
-    porcentaje = input(": ")
-    try:
-        porcentaje = Decimal(porcentaje * 0.01)
-        return porcentaje
-    except:
-        print("Datos ingresados invalidos")
+    while True:
+        print("Ingrese el porcentaje requerido(Ingrese como numero entero)")
+        porcentaje = input(": ")
+        try:
+            porcentaje = Decimal(porcentaje * 0.01)
+            return porcentaje
+        except:
+            print("Datos ingresados invalidos")
 
 def obtener_empresa():
     while True:    
-        print("Dato de la empresa")
+        print("==== INGRESO DE DATOS DE LA EMPRESA ====")
         nom_empresa=input("Ingrese el nombre de la empresa: ")
         anio_actual = input("Ingrese el año actual: ")
         anio_previo = input("Ingrese el año previo al actual: ")
@@ -82,6 +95,7 @@ def obtener_empresa():
 
 def validar_cantidad(cuenta):   
     while True:
+        print("Ingrese la cantidad de la cuenta")
         entrada = input(f"{cuenta}: ")
         try:
             cantidad = Decimal(entrada)
@@ -124,6 +138,7 @@ def perdida_valor():
 
 def obtener_ESF(empresa):
     while True:
+        print("==== ESTADO DE SITUACION FINANCIERA ====")
         activos_circulantes = {}
         activos_no_circulantes = {}
         pasivos_corto = {}
@@ -216,6 +231,8 @@ def obtener_productos():
     productos = []
     nuevo_producto= Producto()
     while True:
+        print("==== INGRESO DE PRODUCTOS ====")
+        separador()
         print("Apartado de productos")
         print("")
         print("Ingrese numero de la opcion:")
@@ -272,45 +289,41 @@ def obtener_productos():
                     print("Menu:")
                     print("1. Agregar nuevo material")
                     print("2. Usar material ya creado")
+                    print("3. Salir(Ingrese todos los materiales que necesite antes de salir)")
                     materiales_creados(materiales_cons)
-                    opcion = input("Opcion: ")
+                    opcion = input("Opción: ")
+
                     if opcion == "1":
-                           material = obtener_material()
-                           materiales_cons.append(material)
-                           materiales.append(material)
-                           break
+                        material = obtener_material()
+                        materiales_cons.append(material)
+                        materiales.append(material)
                     elif opcion == "2":
-                            if len(materiales_cons) > 0:
-                                while True:
-                                    opcion = input("Cual material desea usar: ")
-                                    req = input("Cuanto se requiere del material: ")
-                                    try:
-                                        opcion = int(opcion)
-                                        if opcion <= len(materiales_cons) and opcion > 0:
-                                            material = materiales_cons[opcion-1]
-                                            material.req_mat = Decimal(req)
-                                            materiales.append(material)
-                                            break
-                                        else:
-                                            print("Ingrese un numero que este dentro de la lista")
-                                    except:
-                                        print("Error en los datos")
-                                break
-                            else:
-                                print("Aun no hay materiales registrados")
-                    else:
-                        print("Ingerse una opcion valida")
-                while True:
-                    print("¿Agregar otro material?")
-                    opcion = input("[S/N]: ").upper()
-                    if opcion == 'Y':
-                        print("Agregando otro material")
-                    elif opcion == 'N':
+                        if len(materiales_cons) > 0:
+                            print("Presione '0' en caso de que no se quiera seleccionar ninguna opcion")
+                            while True:
+                                opcion = input("¿Cuál material desea usar (número)? ")
+                                req = input("¿Cuánto se requiere del material? ")
+                                try:
+                                    opcion = int(opcion)
+                                    if 0 < opcion <= len(materiales_cons) :
+                                        material = materiales_cons[opcion - 1]
+                                        material.req_mat = Decimal(req)
+                                        materiales.append(material)
+                                        break
+                                    elif opcion == '0':
+                                        break
+                                    else:
+                                        print("Ingrese un número válido dentro de la lista.")
+                                except:
+                                    print("Error en los datos ingresados.")
+                        else:
+                            print("Aún no hay materiales registrados.")
+                    elif opcion == '3':
                         nuevo_producto.set_materiales(materiales)
-                        print("Materiales agregados")
+                        print("Materiales ingresados")
                         break
                     else:
-                        print("Ingrese S o N")
+                        print("Ingrese una opción válida.")
             case "5":
                 while True:
                     obra_horas = input("Ingrese las horas de mano de obra para realizar el producto: ")
@@ -336,7 +349,7 @@ def obtener_productos():
                         print("Error en los datos")
             case "7":
                 while True:
-                    inv_inicial = input("Ingrese cuanto inventario se tiene del primer producto al inicio del primer semestre")
+                    inv_inicial = input("Ingrese cuanto inventario se tiene del primer producto al inicio del primer semestre: ")
                     try:
                         inv_inicial = Decimal(inv_inicial)
                         nuevo_producto.set_inv_inicial(inv_inicial)
@@ -346,10 +359,10 @@ def obtener_productos():
                         print("Error en los datos")
             case "8":
                 while True:
-                    inv_final = input("Ingrese cuanto inventario se tiene del primer producto al final del segundo semestre")
+                    inv_final = input("Ingrese cuanto inventario se tiene del primer producto al final del segundo semestre: ")
                     try:
                         inv_final = Decimal(inv_final)
-                        nuevo_producto.set_inv_inicial(inv_final)
+                        nuevo_producto.set_inv_final(inv_final)
                         print("Inventario inicial registrado")
                         break
                     except:
@@ -367,10 +380,10 @@ def obtener_productos():
                         print("Producto agregado")
                     elif opcion == "2":
                         print("Regresando al menu")
+                        nuevo_producto = Producto()
                         break
                     else:
                         print("Ingrese alguna de las opciones disponibles")
-                    print("Desea agregar otro producto o terminar con la seccion de productos")
             case "10":
                     print("Desea agregar otro producto o terminar con la seccion de productos")
                     for producto in productos:
@@ -399,7 +412,9 @@ def materiales_creados(materiales_cons):
 def obtener_material():
     nuevo_mat= Material()
     while True:
+        separador()
         print("Iniciando nuevo Material")
+        print("")
         print("Ingrese numero de la opcion:")
         print("1. Nombre del material")
         print("2. Unidad de medida del material")
@@ -473,6 +488,7 @@ def obtener_material():
                         print("Error en los datos")
             case "7":
                 while True:
+                    separador()
                     nuevo_mat.info_material()
                     separador()
                     print("Confirme la informacion para terminar el registro")
@@ -491,28 +507,53 @@ def obtener_material():
 
 def obtener_gastosAyV():
     gastos_ayv = GastosAyV()
-    print("==== INGRESO DE GASTOS DE ADMINISTRACIÓN Y VENTAS ====")
-    print("Ingresar datos Depreciacion")
-    periodo = anual_o_semestral()
-    cantidad = cantidades_SoA(periodo,"Depreciacion" )
-    gastos_ayv.set_depreciacion(cantidad)
-    print("Ingresar datos para sueldos y salarios")
-    periodo = anual_o_semestral()
-    cantidad = cantidades_SoA(periodo, "Sueldos y salarios")
-    gastos_ayv.set_sueldosYsal(cantidad)
-    print("Ingresar datos del porcentaje de comisiones")
-    comisiones = obtener_porcentaje()
-    gastos_ayv.set_comisiones(comisiones)
-    print("Ingresar los datos de gastos varios")
-    periodo = anual_o_semestral()
-    cantidad = cantidades_SoA(periodo, "Varios")
-    gastos_ayv.set_varios(cantidad)
-    print("Ingresar los datos de intereses por obligaciones")
-    periodo = anual_o_semestral()
-    cantidad = cantidades_SoA(periodo, "Intereses por obligaciones")
-    gastos_ayv.set_intereses(cantidad)
-    gastos_ayv.mostrar_gastosAyV()
-    return gastos_ayv
+    while True:
+        print("==== INGRESO DE GASTOS DE ADMINISTRACIÓN Y VENTAS ====")    
+        print("Menu")
+        print("Seleccione la opcion indicanto el numero: ")
+        print("1. Datos de Depeciacion")
+        print("2. Datos de sueldos y salarios")
+        print("3. Procentaje de comisiones")
+        print("4. Datos de gastos varios")
+        print("5. Datos de intereses por obligaciones")
+        print("6. Terminar")
+        opcion = input("Opcion: ")
+        match opcion:
+            case '1':
+                print("Ingresar datos Depreciacion")
+                periodo = anual_o_semestral()
+                cantidad = cantidades_SoA(periodo,"Depreciacion" )
+                gastos_ayv.set_depreciacion(cantidad)
+            case '2':
+                print("Ingresar datos para sueldos y salarios")
+                periodo = anual_o_semestral()
+                cantidad = cantidades_SoA(periodo, "Sueldos y salarios")
+                gastos_ayv.set_sueldosYsal(cantidad)
+            case '3':
+                print("Ingresar datos del porcentaje de comisiones")
+                comisiones = obtener_porcentaje()
+                gastos_ayv.set_comisiones(comisiones)
+            case '4':
+                print("Ingresar los datos de gastos varios")
+                periodo = anual_o_semestral()
+                cantidad = cantidades_SoA(periodo, "Varios")
+                gastos_ayv.set_varios(cantidad)
+            case '5':
+                print("Ingresar los datos de intereses por obligaciones")
+                periodo = anual_o_semestral()
+                cantidad = cantidades_SoA(periodo, "Intereses por obligaciones")
+                gastos_ayv.set_intereses(cantidad)
+            case '6':
+                print("Confirmar datos")
+                gastos_ayv.mostrar_gastosAyV()
+                if confirmar_respuesta():
+                    return gastos_ayv
+                else:
+                    print("Regresando al menu")
+            case _:
+                print("Opcion invalida")
+
+
 
 
 def obtener_gif():

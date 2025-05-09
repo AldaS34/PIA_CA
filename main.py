@@ -11,12 +11,12 @@ while True:
                 empresa = obtener_empresa()
                 esf = obtener_ESF(empresa)
                 productos = obtener_productos()
-                gastos_ayv = obtener_gastosAyV
+                gastos_ayv = obtener_gastosAyV()
                 gif = obtener_gif()
                 extras = obtener_extras()
                 nueva_cedula= Cedulas(empresa,esf,gastos_ayv,gif,extras)
                 lista_presupuestos.append(nueva_cedula)
-                print
+                print("Datos de presupuesto Registrados")
             case '2':
                 pass
             case '3':
