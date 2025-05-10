@@ -63,10 +63,11 @@ def cantidades_SoA(periodo,cuenta):
 
 def obtener_porcentaje():
     while True:
-        print("Ingrese el porcentaje requerido(Ingrese como numero entero)")
-        porcentaje = input(": ")
         try:
-            porcentaje = Decimal(porcentaje * 0.01)
+            print ("Ingrese el porcentaje requerido(Ingrese como numero entero)")
+            porcentaje = int(input(": "))
+
+            porcentaje = Decimal(porcentaje * Decimal(0.01))
             return porcentaje
         except:
             print("Datos ingresados invalidos")
@@ -260,11 +261,11 @@ def obtener_productos():
             case "2":
                 precios = {}
                 while True:
-                    precio_1 = input("Ingrese el precio del producto en su primer semestre: ")
-                    precio_2 = input("Ingrese el precio del producto en su segundo semestre: ")
+                    precio_prod1 = input("Ingrese el precio del producto en su primer semestre: ")
+                    precio_prod2 = input("Ingrese el precio del producto en su segundo semestre: ")
                     try:
-                        precios["sem1"] = Decimal(precio_1)
-                        precios["sem2"] = Decimal(precio_2)
+                        precios["sem1"] = Decimal(precio_prod1)
+                        precios["sem2"] = Decimal(precio_prod2)
                         nuevo_producto.set_precioXsem(precios)
                         print("Precios ingresados") 
                         break       
@@ -273,11 +274,11 @@ def obtener_productos():
             case "3":
                 ventas = {}
                 while True:
-                    precio_1 = input("Ingrese la cantidad de productos que se espera vender en el primer semestre: ")
-                    precio_2 = input("Ingrese la cantidad de productos que se espera vender en el segundo semestre: ")
+                    cant_1 = input("Ingrese la cantidad de productos que se espera vender en el primer semestre: ")
+                    cant_2 = input("Ingrese la cantidad de productos que se espera vender en el segundo semestre: ")
                     try:
-                        ventas["sem1"] = Decimal(precio_1)
-                        ventas["sem2"] = Decimal(precio_2)
+                        ventas["sem1"] = Decimal(cant_1)
+                        ventas["sem2"] = Decimal(cant_2)
                         nuevo_producto.set_ventas_plan(ventas)
                         print("Ventas ingresadas")
                         break
@@ -337,11 +338,11 @@ def obtener_productos():
             case "6":
                 costosXhora = {}
                 while True:
-                    precio_1 = input("Ingrese el costo de mano de obra por hora en el primer semestre: ")
-                    precio_2 = input("Ingrese el costo de mano de obra por hora en el primer semestre: ")
+                    precio_mo1 = input("Ingrese el costo de mano de obra por hora en el primer semestre: ")
+                    precio_mo2 = input("Ingrese el costo de mano de obra por hora en el primer semestre: ")
                     try:
-                        costosXhora["sem1"] = Decimal(precio_1)
-                        costosXhora["sem2"] = Decimal(precio_2)
+                        costosXhora["sem1"] = Decimal(precio_mo1)
+                        costosXhora["sem2"] = Decimal(precio_mo2)
                         nuevo_producto.set_costo_obra(costosXhora)
                         print("Costo de mano de obra registrado")
                         break
@@ -349,7 +350,7 @@ def obtener_productos():
                         print("Error en los datos")
             case "7":
                 while True:
-                    inv_inicial = input("Ingrese cuanto inventario se tiene del primer producto al inicio del primer semestre: ")
+                    inv_inicial = input("Ingrese cuanto inventario se tiene del producto al inicio del primer semestre: ")
                     try:
                         inv_inicial = Decimal(inv_inicial)
                         nuevo_producto.set_inv_inicial(inv_inicial)
@@ -377,10 +378,11 @@ def obtener_productos():
                     opcion = input("Opcion: ")
                     if opcion == "1":
                         productos.append(nuevo_producto)
+                        nuevo_producto = Producto()
                         print("Producto agregado")
+                        break
                     elif opcion == "2":
                         print("Regresando al menu")
-                        nuevo_producto = Producto()
                         break
                     else:
                         print("Ingrese alguna de las opciones disponibles")
@@ -394,7 +396,6 @@ def obtener_productos():
                         return productos
                     elif opcion == "S":
                         print("Regresando a crear un nuevo producto")
-                        nuevo_producto = Producto()
             case _:
                 print("Opcion no valida")
 
@@ -427,9 +428,9 @@ def obtener_material():
         match opcion:
             case "1":
                 while True:
-                    nombre = input("Ingrese nombre del material: ")
+                    nombre_mat = input("Ingrese nombre del material: ")
                     try:
-                        nuevo_mat.set_nombre(nombre)
+                        nuevo_mat.set_nombre(nombre_mat)
                         print("Nombre Ingresado")
                         break
                     except Exception as e:
@@ -558,60 +559,108 @@ def obtener_gastosAyV():
 
 def obtener_gif():
     gif = GIF()
-    print("==== GASTOS INDIRECTOS DE FABRICACION ====")
-    print("Ingresar datos Depreciacion")
-    periodo = anual_o_semestral()
-    cantidad = cantidades_SoA(periodo,"Depreciacion" )
-    gif.set_depreciacion(cantidad)
-    print("Ingresar datos para seguros")
-    periodo = anual_o_semestral()
-    cantidad = cantidades_SoA(periodo, "Seguros")
-    gif.set_seguros(cantidad)
-    print("Ingresar datos de mantenimieto")
-    periodo = anual_o_semestral()
-    cantidad = cantidades_SoA(periodo, "Mantenimiento")
-    gif.set_mantenimiento(cantidad)
-    print("Ingresar los datos de Energéticos")
-    periodo = anual_o_semestral()
-    cantidad = cantidades_SoA(periodo, "Energéticos")
-    gif.set_varios(cantidad)
-    print("Ingresar los datos de intereses por obligaciones")
-    periodo = anual_o_semestral()
-    cantidad = cantidades_SoA(periodo, "Intereses por obligaciones")
-    gif.set_intereses(cantidad)
-    gif.mostrar_gif()
-    return gif
+    while True:
+        print("==== GASTOS INDIRECTOS DE FABRICACION ====")
+        print("Menu")
+        print("Seleccione la opcion indicanto el numero: ")
+        print("1. Datos de Depeciacion")
+        print("2. Datos de Seguros")
+        print("3. Datos de mantenimieto")
+        print("4. Datos de energéticos")
+        print("5. Datos de intereses por obligaciones")
+        print("6. Terminar")
+        opcion = input("Opcion: ")
+        match opcion:
+            case '1':
+                print("Ingresar datos Depreciacion")
+                periodo = anual_o_semestral()
+                cantidad = cantidades_SoA(periodo,"Depreciacion" )
+                gif.set_depreciacion(cantidad)
+            case '2':
+                print("Ingresar datos para seguros")
+                periodo = anual_o_semestral()
+                cantidad = cantidades_SoA(periodo, "Seguros")
+                gif.set_seguros(cantidad)
+            case '3':
+                print("Ingresar datos de mantenimieto")
+                periodo = anual_o_semestral()
+                cantidad = cantidades_SoA(periodo, "Mantenimiento")
+                gif.set_mantenimiento(cantidad)
+            case '4':
+                print("Ingresar los datos de Energéticos")
+                periodo = anual_o_semestral()
+                cantidad = cantidades_SoA(periodo, "Energéticos")
+                gif.set_varios(cantidad)
+            case '5':
+                print("Ingresar los datos de intereses por obligaciones")
+                periodo = anual_o_semestral()
+                cantidad = cantidades_SoA(periodo, "Intereses por obligaciones")
+                gif.set_intereses(cantidad)
+            case '6':
+                print("Confirmar datos")
+                gif.mostrar_gif()
+                if confirmar_respuesta():
+                    return gif
+                else:
+                    print("Regresando al menu")
+            case _:
+                print("Opcion invalida")
 
 def obtener_extras():
     extras = Extras()
-    print("==== GASTOS INDIRECTOS DE FABRICACION ====")
-    n_cuentas = {}
     while True:
-        print("Registrar adquiciciones nuevas")
-        cuenta, cantidad =nueva_cuenta()
-        n_cuentas[cuenta] = cantidad
-        print("Presione tecla 'Enter' si quiere parar de ingresar nuevas adquiciciones")
-        opcion = input()
-        if opcion == "":
-            extras.set_cuentas_extra(n_cuentas)
-            break
-    print("Registrar tasa de ISR")
-    cantidad = obtener_porcentaje()
-    extras.set_isr(cantidad)
-    print("Registrar tasa de PTU")
-    cantidad = obtener_porcentaje()
-    extras.set_ptu(cantidad)
-    print("Regitrar porcentaje que se cobrara del saldo de clientes")
-    cantidad = obtener_porcentaje()
-    extras.set_cobrar_clientes(cantidad)
-    print("Registrar porcentaje que se cobrara de ventas presupuestadas")
-    cantidad = obtener_porcentaje()
-    extras.set_cobrar_ventas(cantidad)
-    print("Registrar porcentaje que se pagara del saldo de proveedores ")
-    cantidad = obtener_porcentaje()
-    extras.set_pagar_prov(cantidad)
-    print("Registrar porcentaje que se pagara de compras presupuestadas ")
-    cantidad = obtener_porcentaje()
-    extras.set_pagar_comp(cantidad)
-    extras.mostrar_extras()
-    return extras
+        print("==== Extras ====")
+        print("Menu")
+        print("Seleccione la opcion indicanto el numero: ")
+        print("1. Datos de adquicisiones")
+        print("2. Datos de Seguros")
+        print("3. Datos de mantenimieto")
+        print("4. Datos de energéticos")
+        print("5. Datos de intereses por obligaciones")
+        print("6. Terminar")
+        opcion = input("Opcion: ")
+        match opcion:
+            case '1':
+                n_cuentas = {}
+                while True:
+                    print("Registrar adquiciciones nuevas")
+                    cuenta, cantidad =nueva_cuenta()
+                    n_cuentas[cuenta] = cantidad
+                    print("Presione tecla 'Enter' si quiere parar de ingresar nuevas adquisiciones")
+                    opcion = input()
+                    if opcion == "":
+                        extras.set_cuentas_extra(n_cuentas)
+                        break
+            case '2':
+                    print("Registrar tasa de ISR")
+                    cantidad = obtener_porcentaje()
+                    extras.set_isr(cantidad)
+            case '3':        
+                    print("Registrar tasa de PTU")
+                    cantidad = obtener_porcentaje()
+                    extras.set_ptu(cantidad)
+            case '4':
+                    print("Regitrar porcentaje que se cobrara del saldo de clientes")
+                    cantidad = obtener_porcentaje()
+                    extras.set_cobrar_clientes(cantidad)
+            case '5':
+                    print("Registrar porcentaje que se cobrara de ventas presupuestadas")
+                    cantidad = obtener_porcentaje()
+                    extras.set_cobrar_ventas(cantidad)
+            case '6':
+                    print("Registrar porcentaje que se pagara del saldo de proveedores ")
+                    cantidad = obtener_porcentaje()
+                    extras.set_pagar_prov(cantidad)
+            case '7':
+                    print("Registrar porcentaje que se pagara de compras presupuestadas ")
+                    cantidad = obtener_porcentaje()
+                    extras.set_pagar_comp(cantidad)
+            case '8':
+                    print("Confirmar datos")
+                    extras.mostrar_extras()
+                    if confirmar_respuesta():
+                        return extras
+                    else:
+                        print("Regresando al menu")
+            case _:
+                print("Opcion invalida")

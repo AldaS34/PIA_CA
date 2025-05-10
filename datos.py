@@ -11,6 +11,7 @@ class Empresa():
         print(f"{self.nombre:^10}")
         print(f"al 31 de diciembre de {self.anio_actual}")
         print(f"Presupuesto del 1 de Enero al 31 de Diciembre del {self.anio_siguiente}")
+    
 
 class ESF:
     def __init__(self,clientes,proveedores,activos_circulantes,activos_no_circulantes, pasivos_corto,pasivos_largo,capital_contable):
@@ -224,7 +225,7 @@ class Producto:
          for valor in lista:
               if not isinstance(valor, (Material)):
                    raise TypeError("Debe ser de la clase material")
-         self.ventas_plan = lista
+         self.materiales = lista
 
     def set_horas_obra(self,valor):
          if not isinstance(valor, (str,float, Decimal)):
@@ -239,7 +240,7 @@ class Producto:
                    raise TypeError("Debe ser un numero")
               if valor <= 0:
                    raise ValueError("No puedes tener un precio menor a 0")
-        self.ventas_plan = lista
+        self.costo_obra = lista
 
     def set_inv_inicial(self,valor):
          if not isinstance(valor,(int,float,Decimal)):
@@ -339,7 +340,7 @@ class GastosAyV:
          for periodo, cantidad in self.sueldosYsal.items():
               print("Sueldos y salarios")
               print(f"{periodo}: {cantidad}")
-         print(f"Comisiones: {100*self.comisiones}%")
+         print(f"Comisiones: {Decimal(100)*self.comisiones}%")
          for periodo, cantidad in self.varios.items():
               print("Varios")
               print(f"{periodo}: {cantidad}")
@@ -489,11 +490,145 @@ class Extras:
         self.isr_a_pagar = valores
 
 class Cedulas:
-     def __init__(self, empresa, esf,productos,gastosAyV,gif,extras):
+    def __init__(self, empresa, esf,productos,gastosAyV,gif,extras):
           self.empresa = empresa
           self.esf = esf
           self.productos = productos
           self.gastosAyV = gastosAyV
           self.gif = gif
           self.extras = extras
+    @staticmethod
+    def importe_venta1(producto):
+         return  producto.ventas_plan['sem1'] * producto.precioXsem['sem1']
+    @staticmethod
+    def importe_venta2(producto):
+         return  producto.ventas_plan['sem2'] * producto.precioXsem['sem2']
+    @staticmethod
+    def importe_total(producto):
+         return Cedulas.importe_venta1(producto) + Cedulas.importe_venta2(producto)
+
+    
+    def total_ventas(self):
+        total_final = 0        
+        for producto in self.productos:
+                total_final += Cedulas.importe_total(producto)
+        return total_final
+
+    def divide_productos(self):
+        productos_col1 = []
+        productos_col2 = []
+        productos_col3 = []
+        productos_col4 = []       
+        total_ventas1 = 0
+        total_ventas2 = 0
+        total_final = 0        
+        for producto in self.productos:
+                total_ventas1 += Cedulas.importe_venta1(producto)
+                total_ventas2 += Cedulas.importe_venta2(producto)
+                total_final += Cedulas.importe_total(producto)
+                productos =[f"Producto {producto.nombre}",
+                            "Unidades a vender",
+                            "Precio de venta",
+                            "Importe de venta",
+                            ""]
+                sem1      =["",
+                            producto.ventas_plan['sem1'],
+                            producto.precioXsem['sem1'],
+                            Cedulas.importe_venta1(producto),
+                            ""]
+                sem2      =["",
+                            producto.ventas_plan['sem2'],
+                            producto.precioXsem['sem2'],
+                            Cedulas.importe_venta2(producto),
+                            ""]
+                
+                total = ["","","",
+                         Cedulas.importe_total(producto),
+                         ""]
+                productos_col1 += productos
+                productos_col2 += sem1
+                productos_col3 += sem2
+                productos_col4 += total
+
+        productos_col1.append("Total de ventas por semestre")
+        productos_col2.append(total_ventas1)
+        productos_col3.append(total_ventas2)
+        productos_col4.append(total_final)
+        return productos_col1,productos_col2,productos_col3,productos_col4
+    
+    def divide_productos(self):
+        productos_col1 = []
+        productos_col2 = []
+        productos_col3 = []
+        productos_col4 = []       
+        total_ventas1 = 0
+        total_ventas2 = 0
+        total_final = 0        
+        for producto in self.productos:
+                total_ventas1 += Cedulas.importe_venta1(producto)
+                total_ventas2 += Cedulas.importe_venta2(producto)
+                total_final += Cedulas.importe_total(producto)
+                productos =[f"Producto {producto.nombre}",
+                            "Unidades a vender",
+                            "Inventario Final",
+                            "Total de Unidades",
+                            "Inventario Inicial",
+                            "Unidades a Producir",
+                            ""]
+                sem1      =["",
+                            ]
+                sem2      =[]
+                total     = []
+                productos_col1 += productos
+                productos_col2 += sem1
+                productos_col3 += sem2
+                productos_col4 += total
+
+        productos_col1.append("Total de ventas por semestre")
+        productos_col2.append(total_ventas1)
+        productos_col3.append(total_ventas2)
+        productos_col4.append(total_final)
+        return productos_col1,productos_col2,productos_col3,productos_col4
+  
+    def entrada_efectivo(self):
+         return (self.esf.clientes * self.extras.cobrar_clientes) + (self.total_ventas() * self.extras.cobrar_ventas)
+
+    def saldo_clientes(self):
+         return (self.esf.clientes + self.total_ventas()) + self.entrada_efectivo()
+
+    def mostrar_P_ventas(self):
+        col1, col2, col3, col4 = self.divide_productos()
+        print(f"1. Presupuesto de ventas")
+        tabla_PV = {"":col1,
+                      "1er.Semestre":col2,
+                      "2.do.Semestre":col3,                      
+                      f"{self.empresa.anio_siguiente}":col4}
+        print(tabulate(tabla_PV, headers="keys",tablefmt= "fancy_grid"))
         
+    def mostrar_saldo_clientes(self):
+         print("2.Determinación del saldo de Clientes y Flujo de Entradas")
+         tabla_SC= {"Descripción":[f"Saldo de clientes 31-Dic-2015{self.empresa.anio_actual}",
+                                  f"Ventas {self.empresa.anio_siguiente}",
+                                  "",
+                                  "Entradas de Efectivo:",
+                                  f"Por Cobranza del {self.empresa.anio_actual}",
+                                  f"Por cobranza del {self.empresa.anio_siguiente}",
+                                  "","",
+                                  f"Saldo de Clientes del {self.empresa.anio_siguiente}"],
+                        "Importe":["","","","","",
+                                    self.esf.clientes * self.extras.cobrar_clientes,
+                                    self.total_ventas() * self.extras.cobrar_ventas,
+                                    "","",""],
+                        "Total":[self.esf.clientes,
+                                 self.total_ventas(),
+                                 self.esf.clientes + self.total_ventas(),
+                                 "","","","",
+                                 self.entrada_efectivo(),
+                                 "",
+                                 self.saldo_clientes()]}
+         print(tabulate(tabla_SC, headers="keys",tablefmt= "fancy_grid"))
+
+    def mostrar_presupuesto_prod(self):
+         print("3. Presupuesto de Producción")
+         tabla_Pprod ={}
+

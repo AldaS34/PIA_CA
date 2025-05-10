@@ -14,11 +14,11 @@ while True:
                 gastos_ayv = obtener_gastosAyV()
                 gif = obtener_gif()
                 extras = obtener_extras()
-                nueva_cedula= Cedulas(empresa,esf,gastos_ayv,gif,extras)
+                nueva_cedula= Cedulas(empresa,esf,productos,gastos_ayv,gif,extras)
                 lista_presupuestos.append(nueva_cedula)
                 print("Datos de presupuesto Registrados")
             case '2':
-                pass
+                nueva_cedula.mostrar_P_ventas()
             case '3':
                 pass
             case '4':
