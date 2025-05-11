@@ -489,6 +489,9 @@ class Extras:
     def set_isr_a_pagar(self, valores):
         self.isr_a_pagar = valores
 
+
+
+
 class Cedulas:
     def __init__(self, empresa, esf,productos,gastosAyV,gif,extras):
           self.empresa = empresa
@@ -556,18 +559,25 @@ class Cedulas:
         productos_col4.append(total_final)
         return productos_col1,productos_col2,productos_col3,productos_col4
     
-    def divide_productos(self):
+    @staticmethod
+    def total_unidades(ventas,inventario):
+         return ventas + inventario
+
+    @staticmethod
+    def unidadesAproducir_sem1(producto,inventario_inicial):
+         return Cedulas.total_unidades(producto.ventas_plan['sem1'],producto.inv_inicial) - inventario_inicial
+
+    @staticmethod
+    def unidadesAproducir_sem2(producto,inventario_inicial):
+         return Cedulas.total_unidades(producto.ventas_plan['sem2'],producto.inv_final) - inventario_inicial
+
+    def productos_produccion(self):
         productos_col1 = []
         productos_col2 = []
         productos_col3 = []
         productos_col4 = []       
-        total_ventas1 = 0
-        total_ventas2 = 0
-        total_final = 0        
         for producto in self.productos:
-                total_ventas1 += Cedulas.importe_venta1(producto)
-                total_ventas2 += Cedulas.importe_venta2(producto)
-                total_final += Cedulas.importe_total(producto)
+
                 productos =[f"Producto {producto.nombre}",
                             "Unidades a vender",
                             "Inventario Final",
@@ -576,18 +586,28 @@ class Cedulas:
                             "Unidades a Producir",
                             ""]
                 sem1      =["",
-                            ]
-                sem2      =[]
-                total     = []
+                            producto.ventas_plan['sem1'],
+                            producto.inv_inicial,
+                            Cedulas.total_unidades(producto.ventas_plan['sem1'],producto.inv_inicial),
+                            producto.inv_inicial,
+                            Cedulas.unidadesAproducir_sem1(producto, producto.inv_inicial)]
+                sem2      =["",
+                            producto.ventas_plan['sem2'],
+                            producto.inv_final,
+                            Cedulas.total_unidades(producto.ventas_plan['sem2'],producto.inv_final),
+                            producto.inv_inicial,
+                            Cedulas.unidadesAproducir_sem2(producto, producto.inv_inicial)]
+                total     = ["",
+                            producto.ventas_plan['sem1'] + producto.ventas_plan['sem2'],
+                            producto.inv_inicial + producto.inv_final,
+                            Cedulas.total_unidades(producto.ventas_plan['sem1'],producto.inv_inicial) + Cedulas.total_unidades(producto.ventas_plan['sem2'],producto.inv_final),
+                            producto.inv_inicial,
+                            Cedulas.unidadesAproducir_sem1(producto, producto.inv_inicial) + Cedulas.unidadesAproducir_sem2(producto, producto.inv_inicial)]
                 productos_col1 += productos
                 productos_col2 += sem1
                 productos_col3 += sem2
                 productos_col4 += total
 
-        productos_col1.append("Total de ventas por semestre")
-        productos_col2.append(total_ventas1)
-        productos_col3.append(total_ventas2)
-        productos_col4.append(total_final)
         return productos_col1,productos_col2,productos_col3,productos_col4
   
     def entrada_efectivo(self):
@@ -629,6 +649,70 @@ class Cedulas:
          print(tabulate(tabla_SC, headers="keys",tablefmt= "fancy_grid"))
 
     def mostrar_presupuesto_prod(self):
+         col_1, col_2,col_3,col_4=self.productos_produccion()
          print("3. Presupuesto de Producción")
-         tabla_Pprod ={}
+         tabla_Pprod ={"":col_1,
+                       "1er. Semestre":col_2,
+                       "2do. Semestre":col_3,
+                       f"Total {self.empresa.anio_siguiente}": col_4}
+         print(tabulate(tabla_Pprod, headers="keys",tablefmt= "fancy_grid"))
 
+    def material_requerido(self):
+        productos_col1 = []
+        productos_col2 = []
+        productos_col3 = []
+        productos_col4 = []
+        for producto in self.productos:
+             descripcion = [f"Producto {producto.nombre}",
+                            "Unidades a producir",
+                            ""]
+             sem_1 = ["",
+                      Cedulas.unidadesAproducir_sem1(producto, producto.inv_inicial),
+                      ""]
+             sem_2 = ["",
+                      Cedulas.unidadesAproducir_sem2(producto, producto.inv_inicial),
+                      ""]
+             total = ["",
+                      Cedulas.unidadesAproducir_sem1(producto, producto.inv_inicial) + Cedulas.unidadesAproducir_sem2(producto, producto.inv_inicial),
+                      ""]
+             for material in producto.materiales:
+                  descripcion += [material.nombre,
+                                  "Requerimiento de material",
+                                  f"Total de {material.nombre} requerido"]
+                  sem_1 += ["",
+                            material.req_mat,
+                            Cedulas.unidadesAproducir_sem1(producto, producto.inv_inicial) * material.req_mat]
+                  sem_2 += ["",
+                            material.req_mat,
+                            Cedulas.unidadesAproducir_sem2(producto, producto.inv_inicial) * material.req_mat]
+                  
+                  total += ["",
+                           material.req_mat,
+                           Cedulas.unidadesAproducir_sem1(producto, producto.inv_inicial) + Cedulas.unidadesAproducir_sem2(producto, producto.inv_inicial) * material.req_mat]
+
+        return productos_col1,productos_col2,productos_col3,productos_col4
+                  
+    def Total_req(self):
+        requerimientos_acumulados = {}
+        for producto in self.productos:
+             for material in producto.materiales:
+                  if material.nombre not in requerimientos_acumulados: 
+                        requerimientos_acumulados[material.nombre] = {
+                             "sem1":0,
+                             "sem2":0,
+                             "total":0
+                        }
+                  requerimientos_acumulados[material.nombre]["sem1"] += Cedulas.unidadesAproducir_sem1(producto, producto.inv_inicial) * material.req_mat
+                  requerimientos_acumulados[material.nombre]["sem2"] += Cedulas.unidadesAproducir_sem2(producto, producto.inv_inicial) * material.req_mat
+                  requerimientos_acumulados[material.nombre]["sem2"] += Cedulas.unidadesAproducir_sem1(producto, producto.inv_inicial) + Cedulas.unidadesAproducir_sem2(producto, producto.inv_inicial) * material.req_mat
+        tabla = []
+
+    def mostrar_req_mat(self):
+        col_1, col_2,col_3,col_4=self.material_requerido()
+        print("4. Presupuesto de Requerimiento de Materiales")
+        tabla_req_mat= {"":col_1,
+                        "1.Semestre":col_2,
+                        "2do.Semestre":col_3,
+                        f"Total {self.empresa.anio_siguiente}":col_4}
+        
+        print(tabulate(tabla_req_mat, headers="keys",tablefmt= "fancy_grid"))
