@@ -446,12 +446,12 @@ class Extras:
         for periodo, cantidad in self.cuentas_extra.items():
               print("Adquisiciones")
               print(f"{periodo}: {cantidad}")
-        print(f"Porcentaje ISR: {self.isr}%")
-        print(f"Porcentaje PTU: {self.ptu}%")
-        print(f"Se cobrará el {self.cobrar_clientes}% del saldo de clientes")
-        print(f"Se cobrará el {self.cobrar_ventas}% de las ventas presupuestadas")
-        print(f"Se pagará el {self.pagar_prov}% del saldo de proveedores")
-        print(f"Se pagará el {self.pagar_comp}% de las compras presupuestadas")
+        print(f"Porcentaje ISR: {self.isr*Decimal("100")}%")
+        print(f"Porcentaje PTU: {self.ptu*Decimal("100")}%")
+        print(f"Se cobrará el {self.cobrar_clientes*Decimal("100")}% del saldo de clientes")
+        print(f"Se cobrará el {self.cobrar_ventas*Decimal("100")}% de las ventas presupuestadas")
+        print(f"Se pagará el {self.pagar_prov*Decimal("100")}% del saldo de proveedores")
+        print(f"Se pagará el {self.pagar_comp*Decimal("100")}% de las compras presupuestadas")
 
     def validar_numero(self,valor):
         if not isinstance(valor, (int,float,Decimal)):
@@ -516,6 +516,7 @@ class Cedulas:
         for producto in self.productos:
                 total_final += Cedulas.importe_total(producto)
         return total_final
+    
 
     def divide_productos(self):
         productos_col1 = []
@@ -590,19 +591,20 @@ class Cedulas:
                             producto.inv_inicial,
                             Cedulas.total_unidades(producto.ventas_plan['sem1'],producto.inv_inicial),
                             producto.inv_inicial,
-                            Cedulas.unidadesAproducir_sem1(producto, producto.inv_inicial)]
+                            Cedulas.unidadesAproducir_sem1(producto, producto.inv_inicial),""]
                 sem2      =["",
                             producto.ventas_plan['sem2'],
                             producto.inv_final,
                             Cedulas.total_unidades(producto.ventas_plan['sem2'],producto.inv_final),
                             producto.inv_inicial,
-                            Cedulas.unidadesAproducir_sem2(producto, producto.inv_inicial)]
+                            Cedulas.unidadesAproducir_sem2(producto, producto.inv_inicial),""]
                 total     = ["",
                             producto.ventas_plan['sem1'] + producto.ventas_plan['sem2'],
-                            producto.inv_inicial + producto.inv_final,
-                            Cedulas.total_unidades(producto.ventas_plan['sem1'],producto.inv_inicial) + Cedulas.total_unidades(producto.ventas_plan['sem2'],producto.inv_final),
+                            producto.inv_final,
+                            producto.ventas_plan['sem1'] + producto.ventas_plan['sem2'] + producto.inv_final,
                             producto.inv_inicial,
-                            Cedulas.unidadesAproducir_sem1(producto, producto.inv_inicial) + Cedulas.unidadesAproducir_sem2(producto, producto.inv_inicial)]
+                            Cedulas.unidadesAproducir_sem1(producto, producto.inv_inicial) + Cedulas.unidadesAproducir_sem2(producto, producto.inv_inicial)
+                            ,""]
                 productos_col1 += productos
                 productos_col2 += sem1
                 productos_col3 += sem2
@@ -614,7 +616,7 @@ class Cedulas:
          return (self.esf.clientes * self.extras.cobrar_clientes) + (self.total_ventas() * self.extras.cobrar_ventas)
 
     def saldo_clientes(self):
-         return (self.esf.clientes + self.total_ventas()) + self.entrada_efectivo()
+         return (self.esf.clientes + self.total_ventas()) - self.entrada_efectivo()
 
     def mostrar_P_ventas(self):
         col1, col2, col3, col4 = self.divide_productos()
@@ -629,6 +631,7 @@ class Cedulas:
          print("2.Determinación del saldo de Clientes y Flujo de Entradas")
          tabla_SC= {"Descripción":[f"Saldo de clientes 31-Dic-2015{self.empresa.anio_actual}",
                                   f"Ventas {self.empresa.anio_siguiente}",
+                                  f"Total de Clientes{self.empresa.anio_siguiente}",
                                   "",
                                   "Entradas de Efectivo:",
                                   f"Por Cobranza del {self.empresa.anio_actual}",
@@ -658,21 +661,21 @@ class Cedulas:
          print(tabulate(tabla_Pprod, headers="keys",tablefmt= "fancy_grid"))
 
     def material_requerido(self):
-        productos_col1 = []
-        productos_col2 = []
-        productos_col3 = []
-        productos_col4 = []
+        descripcion = []
+        sem_1 = []
+        sem_2 = []
+        total = []
         for producto in self.productos:
-             descripcion = [f"Producto {producto.nombre}",
+             descripcion += [f"Producto {producto.nombre}",
                             "Unidades a producir",
                             ""]
-             sem_1 = ["",
+             sem_1 += ["",
                       Cedulas.unidadesAproducir_sem1(producto, producto.inv_inicial),
                       ""]
-             sem_2 = ["",
+             sem_2 += ["",
                       Cedulas.unidadesAproducir_sem2(producto, producto.inv_inicial),
                       ""]
-             total = ["",
+             total += ["",
                       Cedulas.unidadesAproducir_sem1(producto, producto.inv_inicial) + Cedulas.unidadesAproducir_sem2(producto, producto.inv_inicial),
                       ""]
              for material in producto.materiales:
@@ -688,24 +691,32 @@ class Cedulas:
                   
                   total += ["",
                            material.req_mat,
-                           Cedulas.unidadesAproducir_sem1(producto, producto.inv_inicial) + Cedulas.unidadesAproducir_sem2(producto, producto.inv_inicial) * material.req_mat]
+                           (Cedulas.unidadesAproducir_sem1(producto, producto.inv_inicial)*material.req_mat) + (Cedulas.unidadesAproducir_sem2(producto, producto.inv_inicial) * material.req_mat)]
 
-        return productos_col1,productos_col2,productos_col3,productos_col4
+        return descripcion,sem_1,sem_2,total
                   
     def Total_req(self):
         requerimientos_acumulados = {}
         for producto in self.productos:
              for material in producto.materiales:
-                  if material.nombre not in requerimientos_acumulados: 
+                if material.nombre not in requerimientos_acumulados: 
                         requerimientos_acumulados[material.nombre] = {
                              "sem1":0,
                              "sem2":0,
-                             "total":0
+                             "total":0,
+                             "objeto": material
                         }
-                  requerimientos_acumulados[material.nombre]["sem1"] += Cedulas.unidadesAproducir_sem1(producto, producto.inv_inicial) * material.req_mat
-                  requerimientos_acumulados[material.nombre]["sem2"] += Cedulas.unidadesAproducir_sem2(producto, producto.inv_inicial) * material.req_mat
-                  requerimientos_acumulados[material.nombre]["sem2"] += Cedulas.unidadesAproducir_sem1(producto, producto.inv_inicial) + Cedulas.unidadesAproducir_sem2(producto, producto.inv_inicial) * material.req_mat
+                sem1_req =  Cedulas.unidadesAproducir_sem1(producto, producto.inv_inicial) * material.req_mat
+                sem2_req = Cedulas.unidadesAproducir_sem2(producto, producto.inv_inicial) * material.req_mat
+                requerimientos_acumulados[material.nombre]["sem1"] += sem1_req
+                requerimientos_acumulados[material.nombre]["sem2"] += sem2_req
+                requerimientos_acumulados[material.nombre]["total"] += sem1_req + sem2_req
+                  
         tabla = []
+        tabla = [[nombre, datos["sem1"], datos["sem2"], datos["total"], datos["objeto"]] 
+                    for nombre, datos in requerimientos_acumulados.items()]
+        return tabla
+
 
     def mostrar_req_mat(self):
         col_1, col_2,col_3,col_4=self.material_requerido()
@@ -714,5 +725,575 @@ class Cedulas:
                         "1.Semestre":col_2,
                         "2do.Semestre":col_3,
                         f"Total {self.empresa.anio_siguiente}":col_4}
-        
+        tabla_tq = self.Total_req()
         print(tabulate(tabla_req_mat, headers="keys",tablefmt= "fancy_grid"))
+        print(tabulate(tabla_tq, headers=["Total de requerimientos", "", "  ", "  "], tablefmt="grid"))
+        
+
+    def encontrar_compra_mat(self):
+            datos = self.Total_req()
+            compras_Totales1 = 0
+            compras_Totales2 = 0
+            compras_TotalesA = 0
+            col_1 = []
+            col_2 = []
+            col_3 = []
+            col_4 = []
+            for fila in datos:
+                    req_sem1 = fila[1]
+                    req_sem2 = fila[2]
+                    req_total = fila[3]
+                    material = fila[4]
+                    material_total1 = req_sem1 + material.inv_inicial - material.inv_inicial
+                    material_total2 = req_sem2 + material.inv_final - material.inv_inicial
+                    total_materiales = (req_sem1 + material.inv_final) + (req_sem2 + material.inv_inicial)
+                    compra_total = (material_total1 * material.costoXsem['sem1']) + (material_total2 * material.costoXsem['sem2'])
+                    col_1 += [material.nombre,
+                                "Requerimiento de materiales",
+                                "Inventario Final",
+                                "Total de Materiales",
+                                "Inventario Inicial",
+                                "Material a Comprar",
+                                "Precio de Compra",
+                                f"Total de {material.nombre} en $",
+                                ""]
+                    col_2 +=["",
+                            req_sem1,
+                            material.inv_inicial,
+                            req_sem1 + material.inv_inicial,
+                            material.inv_inicial,
+                            material_total1,
+                            material.costoXsem['sem1'],
+                            material_total1 * material.costoXsem['sem1'],""]
+                    
+                    col_3 +=["",
+                            req_sem2,
+                            material.inv_final,
+                            req_sem2 + material.inv_final,
+                            material.inv_inicial,
+                            material_total2,
+                            material.costoXsem['sem2'],
+                            material_total2 * material.costoXsem['sem2'],""]
+                    col_4 += ["",
+                             req_total,
+                            material.inv_final,
+                            total_materiales,
+                            material.inv_inicial,
+                            total_materiales + req_sem1 + material.inv_inicial,
+                            "",
+                            compra_total,""]
+                    
+                    compras_Totales1 += material_total1 * material.costoXsem['sem1']
+                    compras_Totales2 += material_total2 * material.costoXsem['sem2']
+                    compras_TotalesA += compra_total
+            col_1.append("Compras totales:")
+            col_2.append(compras_Totales1)
+            col_3.append(compras_Totales2)
+            col_4.append(compras_TotalesA)
+
+            return col_1, col_2, col_3, col_4
+    
+    def suma_compra_mat(self):
+            datos = self.Total_req()
+            compras_Totales1 = 0
+            compras_Totales2 = 0
+            compras_TotalesA = 0
+
+            for fila in datos:
+                    req_sem1 = fila[1]
+                    req_sem2 = fila[2]
+                    material = fila[4]
+                    material_total1 = req_sem1 + material.inv_inicial - material.inv_inicial
+                    material_total2 = req_sem2 + material.inv_final - material.inv_inicial
+                    compra_total = (material_total1 * material.costoXsem['sem1']) + (material_total2 * material.costoXsem['sem2'])
+
+                    compras_TotalesA += compra_total
+
+            return compras_TotalesA
+
+    def mostrar_compra_mat(self):
+         print("5. Presupuesto de Compra de Mateirles")
+         col_1, col_2, col_3, col_4 = self.encontrar_compra_mat()
+         tabla_cm = {"":col_1,
+                     "1er.Semestre": col_2,
+                     "2de.Semestre":col_3,
+                     f"Total {self.empresa.anio_siguiente}":col_4} 
+         print(tabulate(tabla_cm, headers="keys",tablefmt= "fancy_grid"))
+
+    def mostrar_saldo_proveedores(self):
+         compra_total = self.suma_compra_mat()
+         sal_total =(self.esf.proveedores * self.extras.pagar_prov)+ (compra_total * self.extras.pagar_comp) 
+         print("6.Determinación de saldo de Proveedores y Flujo de Salidas")
+         tabla_SP= {"Descripción":[f"Saldo de Proveedores 31-Dic-{self.empresa.anio_actual}",
+                                  f"Compras {self.empresa.anio_siguiente}",
+                                  f"Total de Proveedores {self.empresa.anio_siguiente}",
+                                  "",
+                                  "Salidas de Efectivo:",
+                                  f"Por Proveedores del {self.empresa.anio_actual}",
+                                  f"Por Proveedores del {self.empresa.anio_siguiente}",
+                                  f"Total de Salidas {self.empresa.anio_siguiente}","",
+                                  f"Saldo de Proveedores del {self.empresa.anio_siguiente}"],
+                        "Importe":["","","","","",
+                                    self.esf.proveedores * self.extras.pagar_prov,
+                                    compra_total * self.extras.pagar_comp,
+                                    "","",""],
+                        "Total":[self.esf.proveedores,
+                                 compra_total,
+                                 self.esf.proveedores + compra_total,
+                                 "","","","",
+                                  (compra_total * self.extras.pagar_comp)+(self.esf.proveedores * self.extras.pagar_prov),
+                                 "",
+                                 (self.esf.proveedores + compra_total)-sal_total]}
+         print(tabulate(tabla_SP, headers="keys",tablefmt= "fancy_grid"))
+    
+
+    def obtener_MOD(self):
+         col_1 =[]
+         col_2 =[]
+         col_3 =[]
+         col_4 =[]
+         horas1 = 0
+         horas2 = 0
+         horaTotal = 0
+         horas_acum1 = 0
+         horas_acum2 = 0
+         horas_acumTotal = 0
+         mod1= 0
+         mod2 = 0
+         modTotal = 0
+         mod_acum1= 0
+         mod_acum2= 0
+         mod_acumTotal = 0
+         for producto in self.productos:
+                horas1 = Cedulas.unidadesAproducir_sem1(producto, producto.inv_inicial)*producto.horas_obra
+                horas2 = Cedulas.unidadesAproducir_sem2(producto, producto.inv_inicial)*producto.horas_obra
+                horaTotal = horas1 + horas2
+                mod1 = horas1 * producto.costo_obra["sem1"]
+                mod2 = horas2 * producto.costo_obra["sem2"]
+                modTotal =mod1 + mod2
+                col_1 +=[producto.nombre,
+                       "Unidades a producir",
+                       "Horas requeridas por unidades",
+                       "Total de horas requeridas",
+                       "Cuota por hora",
+                       "Importe de M.O.D.",""]
+                col_2 +=["",
+                        Cedulas.unidadesAproducir_sem1(producto, producto.inv_inicial),
+                        producto.horas_obra,
+                        horas1,
+                        producto.costo_obra["sem1"],
+                        mod1,""]
+                col_3 +=["",Cedulas.unidadesAproducir_sem2(producto, producto.inv_inicial),
+                         producto.horas_obra,
+                         horas2,
+                         producto.costo_obra["sem2"],
+                         mod2,""]
+                col_4 +=["",Cedulas.unidadesAproducir_sem1(producto, producto.inv_inicial) + Cedulas.unidadesAproducir_sem2(producto, producto.inv_inicial),
+                         producto.horas_obra,
+                         horaTotal,
+                         "",
+                         modTotal,""]
+                horas_acum1 += horas1
+                horas_acum2 += horas2
+                horas_acumTotal += horaTotal
+                mod_acum1+= mod1
+                mod_acum2+= mod2
+                mod_acumTotal+= modTotal
+         col_1.append("Total de horas requeridas por semestre")
+         col_2.append(horas_acum1)
+         col_3.append(horas_acum2)
+         col_4.append(horas_acumTotal)
+         col_1.append("Total de M.O.D. por semestre")
+         col_2.append(mod_acum1)
+         col_3.append(mod_acum2)
+         col_4.append(mod_acumTotal)
+         return col_1,col_2,col_3,col_4
+        
+    def mostrar_MOD(self):
+         col_1,col_2,col_3,col_4 = self.obtener_MOD()
+         print("7.Presupuesto de Mano de Obra Directa")
+         tabla_MOD ={"":col_1,
+                    "1er.Semestre":col_2,
+                    "2do.Semestre":col_3,
+                    f"Total {self.empresa.anio_siguiente}":col_4}
+         print(tabulate(tabla_MOD, headers="keys",tablefmt= "fancy_grid"))
+
+    def horas_req(self):
+         horas1 = 0
+         horas2 = 0
+         horaTotal = 0
+         horas_acumTotal = 0
+         for producto in self.productos:
+                horas1 = Cedulas.unidadesAproducir_sem1(producto, producto.inv_inicial)*producto.horas_obra
+                horas2 = Cedulas.unidadesAproducir_sem2(producto, producto.inv_inicial)*producto.horas_obra
+                horaTotal = horas1 + horas2
+                horas_acumTotal += horaTotal
+         return horas_acumTotal
+    
+         
+    def AnualoSemestral(self):
+            col_2 = []
+            col_3 = []
+            col_4 = []
+            sem_1 = Decimal(0)
+            sem_2 = Decimal(0)
+            if "Anuales" in self.gif.depreciacion:
+                dep = self.gif.depreciacion["Anuales"]
+                col_2 += [dep / Decimal(2)]
+                col_3 += [dep / Decimal(2)]
+                col_4 += [dep]
+                sem_1 += dep / Decimal(2)
+                sem_2 += dep / Decimal(2)
+            else:
+                sem1_val = self.gif.depreciacion["Primer semestre"]
+                sem2_val = self.gif.depreciacion["Segundo semestre"]
+                col_2 += [sem1_val]
+                col_3 += [sem2_val]
+                col_4 += [sem1_val + sem2_val]
+                sem_1 += sem1_val
+                sem_2 += sem2_val
+
+            if "Anuales" in self.gif.seguros:
+                seg = self.gif.seguros["Anuales"]
+                col_2 += [seg / Decimal(2)]
+                col_3 += [seg / Decimal(2)]
+                col_4 += [seg]
+                sem_1 += seg / Decimal(2)
+                sem_2 += seg / Decimal(2)
+            else:
+                sem1_val = self.gif.seguros["Primer semestre"]
+                sem2_val = self.gif.seguros["Segundo semestre"]
+                col_2 += [sem1_val]
+                col_3 += [sem2_val]
+                col_4 += [sem1_val + sem2_val]
+                sem_1 += sem1_val
+                sem_2 += sem2_val
+
+            if "Anuales" in self.gif.mantenimiento:
+                man = self.gif.mantenimiento["Anuales"]
+                col_2 += [man / Decimal(2)]
+                col_3 += [man / Decimal(2)]
+                col_4 += [man]
+                sem_1 += man / Decimal(2)
+                sem_2 += man / Decimal(2)
+            else:
+                sem1_val = self.gif.mantenimiento["Primer semestre"]
+                sem2_val = self.gif.mantenimiento["Segundo semestre"]
+                col_2 += [sem1_val]
+                col_3 += [sem2_val]
+                col_4 += [sem1_val + sem2_val]
+                sem_1 += sem1_val
+                sem_2 += sem2_val
+
+            if "Anuales" in self.gif.energeticos:
+                ener = self.gif.energeticos["Anuales"]
+                col_2 += [ener / Decimal(2)]
+                col_3 += [ener / Decimal(2)]
+                col_4 += [ener]
+                sem_1 += ener / Decimal(2)
+                sem_2 += ener / Decimal(2)
+            else:
+                sem1_val = self.gif.energeticos["Primer semestre"]
+                sem2_val = self.gif.energeticos["Segundo semestre"]
+                col_2 += [sem1_val]
+                col_3 += [sem2_val]
+                col_4 += [sem1_val + sem2_val]
+                sem_1 += sem1_val
+                sem_2 += sem2_val
+
+            if "Anuales" in self.gif.varios:
+                var = self.gif.varios["Anuales"]
+                col_2 += [var / Decimal(2)]
+                col_3 += [var / Decimal(2)]
+                col_4 += [var]
+                sem_1 += var / Decimal(2)
+                sem_2 += var / Decimal(2)
+            else:
+                sem1_val = self.gif.varios["Primer semestre"]
+                sem2_val = self.gif.varios["Segundo semestre"]
+                col_2 += [sem1_val]
+                col_3 += [sem2_val]
+                col_4 += [sem1_val + sem2_val]
+                sem_1 += sem1_val
+                sem_2 += sem2_val
+         
+            col_2.append(sem_1)
+            col_3.append(sem_2)
+            col_4.append(sem_1 + sem_2)
+            suma_total = sem_1 + sem_2
+            return col_2, col_3, col_4, suma_total
+    def mostrar_GIF(self):
+         col_2, col_3, col_4, suma_total = self.AnualoSemestral() 
+         print("8.Presupuesto de Gastos Indirectos de Fabricación")
+         tabla_gif ={"":["Depreciacion",
+                         "Seguros",
+                         "Mantenimiento",
+                         "Energeticos",
+                         "Varios",
+                         "Total G.I.F. por semestre"],
+                     "1er.Semestre":col_2,
+                     "2do.Semestre":col_3,
+                     f"Total {self.empresa.anio_siguiente}":col_4}  
+         horas_req = self.horas_req()
+         print(tabulate(tabla_gif, headers="keys",tablefmt= "fancy_grid"))
+         print(f"Total de G.I.F.           ${suma_total}")
+         print(f"Total horas M.O.D. Anual   {horas_req}")
+         print(f"Costo por Hora de G.I.F.  ${suma_total/horas_req}")
+
+
+    def ventas_proy(self):    
+            total_ventas1 = 0
+            total_ventas2 = 0
+            total_final = 0        
+            for producto in self.productos:
+                    total_ventas1 += Cedulas.importe_venta1(producto)
+                    total_ventas2 += Cedulas.importe_venta2(producto)
+                    total_final += Cedulas.importe_total(producto)
+            return total_ventas1, total_ventas2, total_final
+
+    def AnualoSemestral2(self):
+            col_2 = []
+            col_3 = []
+            col_4 = []
+            sem_1 = Decimal(0)
+            sem_2 = Decimal(0)
+            if "Anuales" in self.gastosAyV.depreciacion:
+                dep = self.gastosAyV.depreciacion["Anuales"]
+                col_2 += [dep / Decimal(2)]
+                col_3 += [dep / Decimal(2)]
+                col_4 += [dep]
+                sem_1 += dep / Decimal(2)
+                sem_2 += dep / Decimal(2)
+            else:
+                sem1_val = self.gastosAyV.depreciacion["Primer semestre"]
+                sem2_val = self.gastosAyV.depreciacion["Segundo semestre"]
+                col_2 += [sem1_val]
+                col_3 += [sem2_val]
+                col_4 += [sem1_val + sem2_val]
+                sem_1 += sem1_val
+                sem_2 += sem2_val
+
+            if "Anuales" in self.gastosAyV.sueldosYsal:
+                seg = self.gastosAyV.sueldosYsal["Anuales"]
+                col_2 += [seg / Decimal(2)]
+                col_3 += [seg / Decimal(2)]
+                col_4 += [seg]
+                sem_1 += seg / Decimal(2)
+                sem_2 += seg / Decimal(2)
+            else:
+                sem1_val = self.gastosAyV.sueldosYsal["Primer semestre"]
+                sem2_val = self.gastosAyV.sueldosYsal["Segundo semestre"]
+                col_2 += [sem1_val]
+                col_3 += [sem2_val]
+                col_4 += [sem1_val + sem2_val]
+                sem_1 += sem1_val
+                sem_2 += sem2_val
+
+            total_ventas1, total_ventas2, total_final = self.ventas_proy()
+            sem1_val = total_ventas1 * self.gastosAyV.comisiones
+            sem2_val = total_ventas2 * self.gastosAyV.comisiones 
+            col_2 += [sem1_val]
+            col_3 += [sem2_val]
+            col_4 += [sem1_val + sem2_val]
+            sem_1 += sem1_val
+            sem_2 += sem2_val
+
+            if "Anuales" in self.gastosAyV.varios:
+                var = self.gastosAyV.varios["Anuales"]
+                col_2 += [var / Decimal(2)]
+                col_3 += [var / Decimal(2)]
+                col_4 += [var]
+                sem_1 += var / Decimal(2)
+                sem_2 += var / Decimal(2)
+            else:
+                sem1_val = self.gastosAyV.varios["Primer semestre"]
+                sem2_val = self.gastosAyV.varios["Segundo semestre"]
+                col_2 += [sem1_val]
+                col_3 += [sem2_val]
+                col_4 += [sem1_val + sem2_val]
+                sem_1 += sem1_val
+                sem_2 += sem2_val
+            
+            if "Anuales" in self.gastosAyV.intereses:
+                var = self.gastosAyV.intereses["Anuales"]
+                col_2 += [var / Decimal(2)]
+                col_3 += [var / Decimal(2)]
+                col_4 += [var]
+                sem_1 += var / Decimal(2)
+                sem_2 += var / Decimal(2)
+            else:
+                sem1_val = self.gastosAyV.intereses["Primer semestre"]
+                sem2_val = self.gastosAyV.intereses["Segundo semestre"]
+                col_2 += [sem1_val]
+                col_3 += [sem2_val]
+                col_4 += [sem1_val + sem2_val]
+                sem_1 += sem1_val
+                sem_2 += sem2_val
+         
+            col_2.append(sem_1)
+            col_3.append(sem_2)
+            col_4.append(sem_1 + sem_2)
+            return col_2, col_3, col_4
+
+
+    def mostrar_GDO(self):
+         col_2, col_3, col_4 = self. AnualoSemestral2()
+         print("9.Presupuesto de Operación")
+         tabla_gfo = {"":["Depreciacion",
+                         "Sueldos y Salarios",
+                         "Comisiones",
+                         "Varios",
+                         "Intereses del Prestamo",
+                         "Total de Gastos de Operacion"],
+                     "1er.Semestre":col_2,
+                     "2do.Semestre":col_3,
+                     f"Total {self.empresa.anio_siguiente}":col_4}
+         print(tabulate(tabla_gfo, headers="keys",tablefmt= "fancy_grid"))
+
+    def hora_gif(self):
+            sem_1 = Decimal(0)
+            sem_2 = Decimal(0)
+            if "Anuales" in self.gif.depreciacion:
+                dep = self.gif.depreciacion["Anuales"]
+                sem_1 += dep / Decimal(2)
+                sem_2 += dep / Decimal(2)
+            else:
+                sem1_val = self.gif.depreciacion["Primer semestre"]
+                sem2_val = self.gif.depreciacion["Segundo semestre"]
+                sem_1 += sem1_val
+                sem_2 += sem2_val
+
+            if "Anuales" in self.gif.seguros:
+                seg = self.gif.seguros["Anuales"]
+                sem_1 += seg / Decimal(2)
+                sem_2 += seg / Decimal(2)
+            else:
+                sem1_val = self.gif.seguros["Primer semestre"]
+                sem2_val = self.gif.seguros["Segundo semestre"]
+                sem_1 += sem1_val
+                sem_2 += sem2_val
+
+            if "Anuales" in self.gif.mantenimiento:
+                man = self.gif.mantenimiento["Anuales"]
+                sem_1 += man / Decimal(2)
+                sem_2 += man / Decimal(2)
+            else:
+                sem1_val = self.gif.mantenimiento["Primer semestre"]
+                sem2_val = self.gif.mantenimiento["Segundo semestre"]
+                sem_1 += sem1_val
+                sem_2 += sem2_val
+
+            if "Anuales" in self.gif.energeticos:
+                ener = self.gif.energeticos["Anuales"]
+                sem_1 += ener / Decimal(2)
+                sem_2 += ener / Decimal(2)
+            else:
+                sem1_val = self.gif.energeticos["Primer semestre"]
+                sem2_val = self.gif.energeticos["Segundo semestre"]
+                sem_1 += sem1_val
+                sem_2 += sem2_val
+
+            if "Anuales" in self.gif.varios:
+                var = self.gif.varios["Anuales"]
+                sem_1 += var / Decimal(2)
+                sem_2 += var / Decimal(2)
+            else:
+                sem1_val = self.gif.varios["Primer semestre"]
+                sem2_val = self.gif.varios["Segundo semestre"]
+
+                sem_1 += sem1_val
+                sem_2 += sem2_val
+
+            suma_total = sem_1 + sem_2
+            horas = self.horas_req()
+            gif_horas = suma_total/horas
+            # gif_horas = gif_horas.quantize(Decimal('0.00'), rounding=ROUND_HALF_UP)
+            return gif_horas
+
+
+    def mostrar_CUPT(self):
+         print("10.Determinacion del Costo Unitario de Productos Terminados")
+         hora_gif = self.hora_gif()
+         for producto in self.productos:
+              print(f"{producto.nombre:^10}")
+              col_1 = []
+              col_2 = []
+              col_3 = []
+              col_4 = []
+              costo_unitario = 0
+              for material in producto.materiales:
+                    col_1 += [material.nombre]
+                    col_2 += [material.costoXsem["sem2"]]
+                    col_3 += [material.req_mat]
+                    col_4 += [material.costoXsem["sem2"]*material.req_mat]
+                    costo_unitario += material.costoXsem["sem2"]*material.req_mat
+              costo_unitario += (producto.costo_obra["sem2"]*producto.horas_obra) + producto.horas_obra*hora_gif
+              col_1 += ["Mano de Obra",
+                        "Gastos Indirectos de Fabricación",
+                        "Costo Unitario"]
+              col_2 += [producto.costo_obra["sem2"],
+                        hora_gif,""]
+              col_3 += [producto.horas_obra,
+                        producto.horas_obra,""]
+              col_4 += [producto.costo_obra["sem2"]*producto.horas_obra,
+                        producto.horas_obra*hora_gif,
+                        costo_unitario]
+              tabla_CPT= {"Descripción":col_1,
+                          "Costo": col_2,
+                          "Cantidad": col_3,
+                          "Costo Unitario":col_4}
+              print(tabulate(tabla_CPT, headers="keys",tablefmt= "fancy_grid"))
+
+    def costos_unitarios(self):
+         hora_gif = self.hora_gif()
+         lista_costos = []
+         for producto in self.productos:
+              costo_unitario = 0
+              for material in producto.materiales:
+                    costo_unitario += material.costoXsem["sem2"]*material.req_mat              
+              costo_unitario += (producto.costo_obra["sem2"]*producto.horas_obra) + producto.horas_obra*hora_gif
+              lista_costos.append(costo_unitario)
+         return lista_costos
+
+    def mostrar_inv_final(self):
+         print("11.Valuación de Inventarios Finales")
+         print("Inventario final de Materiales")
+         col_1 = []
+         col_2 = []
+         col_3 = []
+         col_4 = []
+         costo_total = 0
+         for material in self.productos[0].materiales:
+                col_1 += [material.nombre]
+                col_2 += [material.inv_final]
+                col_3 += [material.costoXsem["sem2"]]
+                col_4 += [material.inv_final*material.costoXsem["sem2"]]
+                costo_total += material.inv_final*material.costoXsem["sem2"]
+         col_1 += ["Invetario Final de Materiales"]
+         col_4 += [costo_total] 
+         tabla_mat = {"Descripción":col_1,
+                      "Unidades":col_2,
+                      "Costo Unitario":col_3,
+                      "Costo Total": col_4}
+         print(tabulate(tabla_mat, headers="keys",tablefmt= "fancy_grid"))
+         col_1 = []
+         col_2 = []
+         col_3 = []
+         col_4 = []
+         costo_total = 0
+         lista_costos = self.costos_unitarios() 
+         print("Inventario Final de Producto Terminado")
+         for index, producto in enumerate(self.productos):
+                col_1 += [producto.nombre]
+                col_2 += [producto.inv_final]
+                col_3 += [lista_costos[index]]
+                col_4 += [producto.inv_final*lista_costos[index]]
+                costo_total += producto.inv_final*lista_costos[index]  
+         col_1 += ["Invetario Final de Producto Terminado"]
+         col_4 += [costo_total] 
+         tabla_prod = {"Descripción":col_1,
+                      "Unidades":col_2,
+                      "Costo Unitario":col_3,
+                      "Costo Total": col_4}
+         print(tabulate(tabla_prod, headers="keys", tablefmt="fancy_grid"))
+

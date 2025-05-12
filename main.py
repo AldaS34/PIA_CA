@@ -1,32 +1,68 @@
 from Funciones import *
+import pickle
+import os
 
+# Funciones para guardar y cargar presupuestos
+def guardar_presupuestos(lista):
+    with open("presupuestos.pkl", "wb") as f:
+        pickle.dump(lista, f)
 
-lista_presupuestos = []
+def cargar_presupuestos():
+    if os.path.exists("presupuestos.pkl"):
+        with open("presupuestos.pkl", "rb") as f:
+            return pickle.load(f)
+    return []
+
+# Cargar presupuestos guardados previamente
+lista_presupuestos = cargar_presupuestos()
+
 while True:
-    while True:
-        menu()
-        opcion = input("Opcion: ")
-        match opcion:
-            case '1':
-                empresa = obtener_empresa()
-                esf = obtener_ESF(empresa)
-                productos = obtener_productos()
-                gastos_ayv = obtener_gastosAyV()
-                gif = obtener_gif()
-                extras = obtener_extras()
-                nueva_cedula= Cedulas(empresa,esf,productos,gastos_ayv,gif,extras)
-                lista_presupuestos.append(nueva_cedula)
-                print("Datos de presupuesto Registrados")
-            case '2':
-                nueva_cedula.mostrar_P_ventas()
-            case '3':
-                pass
-            case '4':
-                pass
-            case _:
-                separador()
-                print("Ingrese una opcion valida")
-                separador()
+    menu()
+    opcion = input("Opción: ")
+    match opcion:
+        case '1':
+            empresa = obtener_empresa()
+            esf = obtener_ESF(empresa)
+            productos = obtener_productos()
+            gastos_ayv = obtener_gastosAyV()
+            gif = obtener_gif()
+            extras = obtener_extras()
+            nueva_cedula = Cedulas(empresa, esf, productos, gastos_ayv, gif, extras)
+            lista_presupuestos.append(nueva_cedula)
+            guardar_presupuestos(lista_presupuestos)
+            print("Datos de presupuesto registrados.")
+        
+        case '2':
+            if lista_presupuestos:
+                cedula_actual = lista_presupuestos[-1]  # Último presupuesto registrado
+                cedula_actual.gif.set_mantenimiento({"Primer semestre": Decimal("33000"), "Segundo semestre": Decimal("25000")})
+                cedula_actual.mostrar_P_ventas()
+                cedula_actual.mostrar_saldo_clientes()
+                cedula_actual.mostrar_presupuesto_prod()
+                cedula_actual.mostrar_req_mat()
+                cedula_actual.mostrar_compra_mat()
+                cedula_actual.mostrar_saldo_proveedores()
+                cedula_actual.mostrar_MOD()
+                cedula_actual.mostrar_GIF()
+                cedula_actual.mostrar_GDO()
+                cedula_actual.mostrar_CUPT()
+                cedula_actual.mostrar_inv_final()
+            else:
+                print("No hay presupuestos registrados todavía.")
+        
+        case '3':
+            # Aquí puedes añadir lógica para mostrar todos los presupuestos o alguno en específico
+            print("Funcionalidad en desarrollo.")
+        
+        case '4':
+            print("Saliendo del programa...")
+            break
+        
+        case _:
+            separador()
+            print("Ingrese una opción válida.")
+            separador()
+            
 
 
 

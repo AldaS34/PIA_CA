@@ -67,7 +67,7 @@ def obtener_porcentaje():
             print ("Ingrese el porcentaje requerido(Ingrese como numero entero)")
             porcentaje = int(input(": "))
 
-            porcentaje = Decimal(porcentaje * Decimal(0.01))
+            porcentaje = Decimal(porcentaje * Decimal("0.01"))
             return porcentaje
         except:
             print("Datos ingresados invalidos")
@@ -77,7 +77,7 @@ def obtener_empresa():
         print("==== INGRESO DE DATOS DE LA EMPRESA ====")
         nom_empresa=input("Ingrese el nombre de la empresa: ")
         anio_actual = input("Ingrese el año actual: ")
-        anio_previo = input("Ingrese el año previo al actual: ")
+        anio_previo = input("Ingrese el año siguiente al actual: ")
         datos_empresa = Empresa(nom_empresa, anio_actual, anio_previo)
         datos_empresa.mostrar_empresa()
         separador()
@@ -308,8 +308,9 @@ def obtener_productos():
                                     opcion = int(opcion)
                                     if 0 < opcion <= len(materiales_cons) :
                                         material = materiales_cons[opcion - 1]
-                                        material.req_mat = Decimal(req)
-                                        materiales.append(material)
+                                        nuevo_mat = Material(material.nombre,material.unidad,material.req_mat,material.inv_inicial,material.inv_final,material.costoXsem)
+                                        nuevo_mat.set_req_mat(Decimal(req))
+                                        materiales.append(nuevo_mat)
                                         break
                                     elif opcion == '0':
                                         break
@@ -512,7 +513,7 @@ def obtener_gastosAyV():
         print("==== INGRESO DE GASTOS DE ADMINISTRACIÓN Y VENTAS ====")    
         print("Menu")
         print("Seleccione la opcion indicanto el numero: ")
-        print("1. Datos de Depeciacion")
+        print("1. Datos de Depreciacion")
         print("2. Datos de sueldos y salarios")
         print("3. Procentaje de comisiones")
         print("4. Datos de gastos varios")
@@ -567,7 +568,7 @@ def obtener_gif():
         print("2. Datos de Seguros")
         print("3. Datos de mantenimieto")
         print("4. Datos de energéticos")
-        print("5. Datos de intereses por obligaciones")
+        print("5. Datos de gastos Varios")
         print("6. Terminar")
         opcion = input("Opcion: ")
         match opcion:
@@ -590,12 +591,12 @@ def obtener_gif():
                 print("Ingresar los datos de Energéticos")
                 periodo = anual_o_semestral()
                 cantidad = cantidades_SoA(periodo, "Energéticos")
-                gif.set_varios(cantidad)
+                gif.set_energeticos(cantidad)
             case '5':
-                print("Ingresar los datos de intereses por obligaciones")
+                print("Ingresar los datos de gastos varios")
                 periodo = anual_o_semestral()
-                cantidad = cantidades_SoA(periodo, "Intereses por obligaciones")
-                gif.set_intereses(cantidad)
+                cantidad = cantidades_SoA(periodo, "Varios")
+                gif.set_varios(cantidad)
             case '6':
                 print("Confirmar datos")
                 gif.mostrar_gif()
@@ -613,11 +614,13 @@ def obtener_extras():
         print("Menu")
         print("Seleccione la opcion indicanto el numero: ")
         print("1. Datos de adquicisiones")
-        print("2. Datos de Seguros")
-        print("3. Datos de mantenimieto")
-        print("4. Datos de energéticos")
-        print("5. Datos de intereses por obligaciones")
-        print("6. Terminar")
+        print("2. Datos de tasa de ISR")
+        print("3. Datos de tasa de PTU")
+        print("4. Datos de saldo de clientes")
+        print("5. Datos de ventas presupuestadas")
+        print("6. Datos de saldo de proveedores")
+        print("7. Datos de compras presupuestadas")
+        print("8. Terminar")
         opcion = input("Opcion: ")
         match opcion:
             case '1':
