@@ -7,8 +7,7 @@ def menu():
     print("Seleccione la opcion indicanto el numero: ")
     print("1. Iniciar Presupuesto")
     print("2. Consultar Presupuesto")
-    print("3. Eliminar Presupuesto")
-    print("4. Salir")
+    print("3. Salir")
 
 def confirmar_respuesta():
     while True:
@@ -109,7 +108,7 @@ def validar_cantidad(cuenta):
 
 def nueva_cuenta():
     while True:
-        nombre = input("Nombre de la cuenta: ").strip()
+        nombre = input("Nombre de la cuenta: ").strip().upper()
         cantidad = validar_cantidad(nombre)
         print(f"{nombre}: ${cantidad}")
         while True:

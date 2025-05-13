@@ -1,5 +1,12 @@
 from tabulate import *
 from decimal import *
+import unicodedata
+
+def normalizar(texto):
+    texto = texto.lower().strip()
+    texto = unicodedata.normalize('NFD', texto)
+    texto = ''.join(c for c in texto if unicodedata.category(c) != 'Mn')
+    return texto
 
 class Empresa():
     def __init__(self,nombre,anio_actual,anio_siguiente):
@@ -46,6 +53,13 @@ class ESF:
     
     def suma_pasivo_capital(self):
         return self.total_pasivos() + self.total_capital()
+
+
+    def mostrar_activos_circulantes(self):
+        print("ACTIVOS CIRCULANTES:")
+        print(f"  1. Clientes: $ {self.clientes:.2f}")
+        for i, (nombre, valor) in enumerate(self.activos_circulantes.items(), start=2):
+            print(f"  {i}. {nombre}: $ {valor:.2f}")
 
 
     def mostrar_ESF(self,empresa):
@@ -715,7 +729,9 @@ class Cedulas:
         tabla = []
         tabla = [[nombre, datos["sem1"], datos["sem2"], datos["total"], datos["objeto"]] 
                     for nombre, datos in requerimientos_acumulados.items()]
-        return tabla
+        tabla_Alt = [[nombre, datos["sem1"], datos["sem2"], datos["total"]] 
+                    for nombre, datos in requerimientos_acumulados.items()]
+        return tabla, tabla_Alt
 
 
     def mostrar_req_mat(self):
@@ -725,13 +741,13 @@ class Cedulas:
                         "1.Semestre":col_2,
                         "2do.Semestre":col_3,
                         f"Total {self.empresa.anio_siguiente}":col_4}
-        tabla_tq = self.Total_req()
+        tabla_tq, tabla_tqA = self.Total_req()
         print(tabulate(tabla_req_mat, headers="keys",tablefmt= "fancy_grid"))
-        print(tabulate(tabla_tq, headers=["Total de requerimientos", "", "  ", "  "], tablefmt="grid"))
+        print(tabulate(tabla_tqA, headers=["Total de requerimientos", "", "  "], tablefmt="grid"))
         
 
     def encontrar_compra_mat(self):
-            datos = self.Total_req()
+            datos, tabla_tqA = self.Total_req()
             compras_Totales1 = 0
             compras_Totales2 = 0
             compras_TotalesA = 0
@@ -794,7 +810,7 @@ class Cedulas:
             return col_1, col_2, col_3, col_4
     
     def suma_compra_mat(self):
-            datos = self.Total_req()
+            datos, tabla_tqA = self.Total_req()
             compras_Totales1 = 0
             compras_Totales2 = 0
             compras_TotalesA = 0
@@ -1252,7 +1268,7 @@ class Cedulas:
               for material in producto.materiales:
                     costo_unitario += material.costoXsem["sem2"]*material.req_mat              
               costo_unitario += (producto.costo_obra["sem2"]*producto.horas_obra) + producto.horas_obra*hora_gif
-              lista_costos.append(costo_unitario)
+              lista_costos.append(f"{costo_unitario:.4f}")
          return lista_costos
 
     def mostrar_inv_final(self):
@@ -1280,20 +1296,483 @@ class Cedulas:
          col_2 = []
          col_3 = []
          col_4 = []
-         costo_total = 0
+         costo_total = Decimal(0)
          lista_costos = self.costos_unitarios() 
          print("Inventario Final de Producto Terminado")
          for index, producto in enumerate(self.productos):
+                num_sec = Decimal(lista_costos[index])
                 col_1 += [producto.nombre]
                 col_2 += [producto.inv_final]
                 col_3 += [lista_costos[index]]
-                col_4 += [producto.inv_final*lista_costos[index]]
-                costo_total += producto.inv_final*lista_costos[index]  
+                col_4 += [producto.inv_final*num_sec]
+                costo_total += producto.inv_final*num_sec
+                
          col_1 += ["Invetario Final de Producto Terminado"]
          col_4 += [costo_total] 
          tabla_prod = {"Descripción":col_1,
                       "Unidades":col_2,
                       "Costo Unitario":col_3,
                       "Costo Total": col_4}
-         print(tabulate(tabla_prod, headers="keys", tablefmt="fancy_grid"))
+         print(tabulate(tabla_prod, headers="keys", tablefmt="rounded_grid",floatfmt=".2f"))
+
+    def averiguar_cuenta_pasivo_corto(self, cuenta):
+        print(f"Ingrese la cuenta que pertenece al {cuenta}:")
+
+        # Obtener las cuentas desde self.esf
+        cuentas = [("Proveedores", self.esf.proveedores)] + list(self.esf.pasivos_corto.items())
+
+        # Mostrar cuentas enumeradas
+        for i, (nombre, valor) in enumerate(cuentas, start=1):
+            print(f"  {i}. {nombre}: $ {valor:.2f}")
+
+        # Pedir selección
+        try:
+            opcion = int(input("Opción: "))
+            if 1 <= opcion <= len(cuentas):
+                nombre, valor = cuentas[opcion - 1]
+                print(f"\nHas seleccionado: {nombre} con un valor de $ {valor:.2f}")
+                return valor
+            else:
+                print("Opción fuera de rango.")
+                return None
+        except ValueError:
+            print("Por favor ingresa un número válido.")
+            return None
+
+        
+    def averiguar_cuenta(self,cuenta):
+        print(f"Ingrese la cuenta que pertenece al {cuenta}:")
+        
+        # Crear lista de cuentas: [(nombre, valor)]
+        cuentas = [("Clientes", self.esf.clientes)] + list(self.esf.activos_circulantes.items())
+        
+        # Mostrar enumeradas
+        for i, (nombre, valor) in enumerate(cuentas, start=1):
+            print(f"  {i}. {nombre}: $ {valor:.2f}")
+        
+        # Pedir selección
+        try:
+            opcion = int(input("Opción: "))
+            if 1 <= opcion <= len(cuentas):
+                nombre, valor = cuentas[opcion - 1]
+                print(f"\nHas seleccionado: {nombre} con un valor de $ {valor:.2f}")
+                return valor  # <- Devuelve directamente el value (Decimal)
+            else:
+                print("Opción fuera de rango.")
+                return None
+        except ValueError:
+            print("Por favor ingresa un número válido.")
+            return None
+
+    def inv_final_mat(self):
+                costo_total = 0
+                for material in self.productos[0].materiales:
+                        costo_total += material.inv_final*material.costoXsem["sem2"]
+                return costo_total
+
+    def mod_acum_total(self):
+            horas_acum1 = 0
+            horas_acum2 = 0
+            horas_acumTotal = 0
+            mod1= 0
+            mod2 = 0
+            modTotal = 0
+            mod_acum1= 0
+            mod_acum2= 0
+            mod_acumTotal = 0
+            for producto in self.productos:
+                    horas1 = Cedulas.unidadesAproducir_sem1(producto, producto.inv_inicial)*producto.horas_obra
+                    horas2 = Cedulas.unidadesAproducir_sem2(producto, producto.inv_inicial)*producto.horas_obra
+                    horaTotal = horas1 + horas2
+                    mod1 = horas1 * producto.costo_obra["sem1"]
+                    mod2 = horas2 * producto.costo_obra["sem2"]
+                    modTotal =mod1 + mod2
+
+                    horas_acum1 += horas1
+                    horas_acum2 += horas2
+                    horas_acumTotal += horaTotal
+                    mod_acum1+= mod1
+                    mod_acum2+= mod2
+                    mod_acumTotal+= modTotal
+            return mod_acumTotal
+            
+
+    def prod_terminado(self):
+         costo_total = Decimal(0)
+         lista_costos = self.costos_unitarios() 
+         for index, producto in enumerate(self.productos):
+                num_sec = Decimal(lista_costos[index])
+                costo_total += producto.inv_final*num_sec
+         return costo_total
+
+    def consigue_ventas(self):
+        total_final = 0        
+        for producto in self.productos:
+                total_final += Cedulas.importe_total(producto)
+        return total_final
+
+
+    def consigue_GdO(self):
+            sem_1 = Decimal(0)
+            sem_2 = Decimal(0)
+            if "Anuales" in self.gastosAyV.depreciacion:
+                dep = self.gastosAyV.depreciacion["Anuales"]
+                sem_1 += dep / Decimal(2)
+                sem_2 += dep / Decimal(2)
+            else:
+                sem1_val = self.gastosAyV.depreciacion["Primer semestre"]
+                sem2_val = self.gastosAyV.depreciacion["Segundo semestre"]
+                sem_1 += sem1_val
+                sem_2 += sem2_val
+
+            if "Anuales" in self.gastosAyV.sueldosYsal:
+                seg = self.gastosAyV.sueldosYsal["Anuales"]
+                sem_1 += seg / Decimal(2)
+                sem_2 += seg / Decimal(2)
+            else:
+                sem1_val = self.gastosAyV.sueldosYsal["Primer semestre"]
+                sem2_val = self.gastosAyV.sueldosYsal["Segundo semestre"]
+                sem_1 += sem1_val
+                sem_2 += sem2_val
+
+            total_ventas1, total_ventas2, total_final = self.ventas_proy()
+            sem1_val = total_ventas1 * self.gastosAyV.comisiones
+            sem2_val = total_ventas2 * self.gastosAyV.comisiones 
+            sem_1 += sem1_val
+            sem_2 += sem2_val
+
+            if "Anuales" in self.gastosAyV.varios:
+                var = self.gastosAyV.varios["Anuales"]
+                sem_1 += var / Decimal(2)
+                sem_2 += var / Decimal(2)
+            else:
+                sem1_val = self.gastosAyV.varios["Primer semestre"]
+                sem2_val = self.gastosAyV.varios["Segundo semestre"]
+                sem_1 += sem1_val
+                sem_2 += sem2_val
+            
+            if "Anuales" in self.gastosAyV.intereses:
+                var = self.gastosAyV.intereses["Anuales"]
+                sem_1 += var / Decimal(2)
+                sem_2 += var / Decimal(2)
+            else:
+                sem1_val = self.gastosAyV.intereses["Primer semestre"]
+                sem2_val = self.gastosAyV.intereses["Segundo semestre"]
+                sem_1 += sem1_val
+                sem_2 += sem2_val
+         
+            total = sem_1 + sem_2
+            return total
+    
+    def encontrar_GIF(self):
+            sem_1 = Decimal(0)
+            sem_2 = Decimal(0)
+            if "Anuales" in self.gif.seguros:
+                seg = self.gif.seguros["Anuales"]
+                sem_1 += seg / Decimal(2)
+                sem_2 += seg / Decimal(2)
+            else:
+                sem1_val = self.gif.seguros["Primer semestre"]
+                sem2_val = self.gif.seguros["Segundo semestre"]
+                sem_1 += sem1_val
+                sem_2 += sem2_val
+
+            if "Anuales" in self.gif.mantenimiento:
+                man = self.gif.mantenimiento["Anuales"]
+                sem_1 += man / Decimal(2)
+                sem_2 += man / Decimal(2)
+            else:
+                sem1_val = self.gif.mantenimiento["Primer semestre"]
+                sem2_val = self.gif.mantenimiento["Segundo semestre"]
+                sem_1 += sem1_val
+                sem_2 += sem2_val
+
+            if "Anuales" in self.gif.energeticos:
+                ener = self.gif.energeticos["Anuales"]
+                col_2 += [ener / Decimal(2)]
+                col_3 += [ener / Decimal(2)]
+                col_4 += [ener]
+                sem_1 += ener / Decimal(2)
+                sem_2 += ener / Decimal(2)
+            else:
+                sem1_val = self.gif.energeticos["Primer semestre"]
+                sem2_val = self.gif.energeticos["Segundo semestre"]
+                sem_1 += sem1_val
+                sem_2 += sem2_val
+
+            if "Anuales" in self.gif.varios:
+                var = self.gif.varios["Anuales"]
+                sem_1 += var / Decimal(2)
+                sem_2 += var / Decimal(2)
+            else:
+                sem1_val = self.gif.varios["Primer semestre"]
+                sem2_val = self.gif.varios["Segundo semestre"]
+                sem_1 += sem1_val
+                sem_2 += sem2_val
+            suma_total = sem_1 + sem_2
+            return suma_total
+    
+    def encontrar_GDO(self):
+            sem_1 = Decimal(0)
+            sem_2 = Decimal(0)
+            if "Anuales" in self.gastosAyV.sueldosYsal:
+                seg = self.gastosAyV.sueldosYsal["Anuales"]
+                sem_1 += seg / Decimal(2)
+                sem_2 += seg / Decimal(2)
+            else:
+                sem1_val = self.gastosAyV.sueldosYsal["Primer semestre"]
+                sem2_val = self.gastosAyV.sueldosYsal["Segundo semestre"]
+                sem_1 += sem1_val
+                sem_2 += sem2_val
+
+            total_ventas1, total_ventas2, total_final = self.ventas_proy()
+            sem1_val = total_ventas1 * self.gastosAyV.comisiones
+            sem2_val = total_ventas2 * self.gastosAyV.comisiones 
+            sem_1 += sem1_val
+            sem_2 += sem2_val
+
+            if "Anuales" in self.gastosAyV.varios:
+                var = self.gastosAyV.varios["Anuales"]
+                sem_1 += var / Decimal(2)
+                sem_2 += var / Decimal(2)
+            else:
+                sem1_val = self.gastosAyV.varios["Primer semestre"]
+                sem2_val = self.gastosAyV.varios["Segundo semestre"]
+                sem_1 += sem1_val
+                sem_2 += sem2_val
+            
+            if "Anuales" in self.gastosAyV.intereses:
+                var = self.gastosAyV.intereses["Anuales"]
+                sem_1 += var / Decimal(2)
+                sem_2 += var / Decimal(2)
+            else:
+                sem1_val = self.gastosAyV.intereses["Primer semestre"]
+                sem2_val = self.gastosAyV.intereses["Segundo semestre"]
+                sem_1 += sem1_val
+                sem_2 += sem2_val
+         
+            total = sem_1 + sem_2
+            return total
+    
+    def titulo(self):
+        print("=" * 80)
+        print(f"{self.empresa.nombre.upper():^80}")
+        print(f"{f'Presupuesto del 1 de Enero al 31 de Diciembre del {self.empresa.anio_siguiente}':^80}")
+        print("=" * 80)
+
+
+
+    def  mostrar_PresupuestoFinanciero(self):
+            cuenta_ini_mat = self.averiguar_cuenta("Saldo Inicial de materiales")
+            cuenta_terprod = self.averiguar_cuenta("Inventario Inicial de Productos Terminados")
+            comp_total = self.suma_compra_mat()
+            invf_mat = self.inv_final_mat()
+            mod_acumTotal = self.mod_acum_total()
+            col_2, col_3, col_4, suma_total = self.AnualoSemestral() 
+            inv_prod = self.prod_terminado()
+            mat_disponible = cuenta_ini_mat + comp_total
+            mat_utilizado = mat_disponible - invf_mat
+            costo_produccion = mat_utilizado + mod_acumTotal + suma_total
+            total_disp =costo_produccion + cuenta_terprod
+            costo_ventas = total_disp - inv_prod
+            self.titulo()
+            print("Estado de Costo de Produccion y Ventas")
+            tabla_CdPV ={"":["Saldo Inicial de Materiales",
+                             "Compras de Materiales",
+                             "Material Disponible",
+                             "Inventario Final de Materiales",
+                             "Materiales Utilizados",
+                             "Mano de Obra Directa",
+                             "Gastos de Fabricacion Indirectos",
+                             "Costo de Produccion",
+                             "Inventario Inicial de Productos Terminados",
+                             "Total de Produccion Disponible",
+                             "Inventario Final de Productos Terminados",
+                             "Costo de Ventas"],
+                         " ":[ cuenta_ini_mat,
+                              comp_total,
+                              mat_disponible,
+                               invf_mat,
+                                mat_utilizado,
+                                mod_acumTotal,
+                                suma_total,
+                                  costo_produccion,
+                                  cuenta_terprod,
+                                  total_disp,
+                                  inv_prod,
+                                  costo_ventas]}
+            print(tabulate(tabla_CdPV, headers="keys", tablefmt="rounded_grid",floatfmt=".2f"))
+            ventas = self.consigue_ventas()
+            gastos_operacion = self.consigue_GdO()
+            utilidad_bruta = ventas - costo_ventas
+            utilidad_operacion = utilidad_bruta - gastos_operacion
+            Isr = utilidad_operacion * self.extras.isr
+            Ptu = utilidad_operacion * self.extras.ptu
+            utilidad_neta = utilidad_operacion - Isr - Ptu
+            self.titulo()
+            print("Estado de Resultados")
+            tabla_EdR ={"":["Ventas",
+                            "Costo de Ventas",
+                            "Utilidad Bruta",
+                            "Gastos de Operación",
+                            "Utilidad de Operación",
+                            "ISR",
+                            "PUT",
+                            "Utilidad Neta"],
+                        " ":[ventas,
+                             costo_ventas,
+                             utilidad_bruta,
+                             gastos_operacion,
+                             utilidad_operacion,
+                             Isr,
+                             Ptu,
+                             utilidad_neta]}
+            print(tabulate(tabla_EdR, headers="keys", tablefmt="rounded_grid",floatfmt=".2f"))
+            compra_total = self.suma_compra_mat()
+            saldo_inicial = self.averiguar_cuenta("Saldo Inicial de efectivo")
+            saldo_ISR = self.averiguar_cuenta_pasivo_corto("ISR Por Pagar")
+            cobranza_ant =self.esf.clientes * self.extras.cobrar_clientes
+            cobranza_nuevo = self.total_ventas() * self.extras.cobrar_ventas
+            proveedores_ant = self.esf.proveedores * self.extras.pagar_prov
+            proveedores_nuevo =  compra_total * self.extras.pagar_comp
+            pago_gif = self.encontrar_GIF()
+            pago_gdo = self.encontrar_GDO()
+            lista_cuentas_nombres = list(self.extras.cuentas_extra.keys())
+            lista_cuentas_valores = list(self.extras.cuentas_extra.values())
+            lista_suma = sum(lista_cuentas_valores)
+            Total_entradas = cobranza_nuevo + cobranza_ant
+            Efectivo_disponible = Total_entradas + saldo_inicial
+            total_salidas = proveedores_ant + proveedores_nuevo +mod_acumTotal + pago_gif + pago_gdo + lista_suma + saldo_ISR + Isr
+            Flujo_efectivo = Efectivo_disponible - total_salidas
+            self.titulo()
+            print(self.empresa.anio_siguiente)
+            print(self.empresa.anio_actual)
+            print("Estado de Flujo de Efectivo")
+            tabla_Efe ={"":["Saldo Inicial de Efectivo",
+                            "Entradas:",
+                            f"Cobranza {self.empresa.anio_siguiente}",
+                            f"Cobranza {self.empresa.anio_actual}",
+                            "Total de Entradas",
+                            "Efectivo Disponible",
+                            "Salidas:",
+                            f"Proveedores {self.empresa.anio_siguiente}",
+                            f"Proveedores {self.empresa.anio_actual}",
+                            "Pago de mano de Obra Directa",
+                            "Pago de Gastos Indirectos de Fabricación",
+                            "Pago de Gastos de Operación",
+                            *lista_cuentas_nombres,
+                            f"Pago de ISR {self.empresa.anio_actual}",
+                            f"Pago de ISR {self.empresa.anio_siguiente}","",
+                            "Total de Salidas",
+                            "Flujo de Efectivo Actual"],
+                        " ":["","",
+                             cobranza_nuevo,
+                             cobranza_ant,
+                             "","","",
+                             proveedores_nuevo,
+                             proveedores_ant,
+                             mod_acumTotal,
+                             pago_gif,
+                             pago_gdo,
+                             *lista_cuentas_valores,
+                             saldo_ISR,
+                             Isr],
+                        "   ":[saldo_inicial,"","","",
+                               Total_entradas,
+                               Efectivo_disponible,"","","","","","","","","","",
+                               total_salidas,
+                               Flujo_efectivo]}
+            print(tabulate(tabla_Efe, headers="keys", tablefmt="rounded_grid",floatfmt=".2f"))
+            dep_acum = -(self.gastosAyV.depreciacion["Anuales"] + self.gif.depreciacion["Anuales"]) + self.esf.activos_no_circulantes['Depreciación Acumulada'] 
+            planta_equipo = self.esf.activos_no_circulantes['Planta y Equipo'] + self.extras.cuentas_extra['Planta y Equipo']
+            total_activo_circulante = Flujo_efectivo + self.saldo_clientes()+self.esf.activos_circulantes['Deudores Diversos']+self.esf.activos_circulantes['Funcionarios y Empleados']+invf_mat+inv_prod
+            total_activo_nocirculante = self.esf.activos_no_circulantes['Terreno']+planta_equipo+dep_acum
+            activo_total = total_activo_circulante + total_activo_nocirculante
+            total_corto_plazo = proveedores_nuevo+self.esf.pasivos_corto['Documentos por Pagar']+Ptu
+            total_largo_plazo = self.esf.pasivos_largo['Préstamos Bancarios']
+            total_pasivo = total_largo_plazo + total_corto_plazo
+            capital =  self.esf.capital_contable['Capital Contribuido']+self.esf.capital_contable['Capital Ganado']+utilidad_neta
+            pasivo_capital = total_pasivo + capital
+            self.titulo()
+            print("Balance General")
+            tabla_bl = {"":["Activo",
+                            "Circulante",
+                            "Efectivo",
+                            "Clientes",
+                            "Deudores Diversos",
+                            "Funcionarios y Empleados",
+                            "Inventario de Materiales",
+                            "Inventario de Producto Terminado",
+                            "Total de Activos Circulantes",
+                            "",
+                            "No Circulante",
+                            "Terreno",
+                            "Planta y Equipo",
+                            "Depreciacion Acumulada",
+                            "Total Activos no Circulante",
+                            "",
+                            "Activo Total",
+                            "",
+                            "Pasivo",
+                            "Corto Plazo",
+                            "Proveedores",
+                            "Documento por Pagar",
+                            "ISR por Pagar",
+                            "PTU por Pagar",
+                            "Total de Pasivo Corto Plazo",
+                            "",
+                            "Largo Plazo",
+                            "Prestamos Bancarios",
+                            "Total ed Pasivo Largo Plazo",
+                            "",
+                            "Pasivo Total",
+                            "Capital Contable",
+                            "Capital Aportado",
+                            "Capital Ganado",
+                            "Utilidad del Ejercicio",
+                            "Total de Capital Contable",
+                            "",
+                            "Suma de Pasivo y Capital"],
+                        " ":["","",
+                             Flujo_efectivo,
+                             self.saldo_clientes(),
+                             self.esf.activos_circulantes['Deudores Diversos'],
+                             self.esf.activos_circulantes['Funcionarios y Empleados'],
+                             invf_mat,
+                             inv_prod,
+                             "","","",
+                             self.esf.activos_no_circulantes['Terreno'],
+                             planta_equipo,
+                             dep_acum,
+                             "","","","","","",
+                             proveedores_nuevo,
+                             self.esf.pasivos_corto['Documentos por Pagar'],
+                             0,
+                             Ptu,
+                             "",
+                             "",
+                             "",
+                             self.esf.pasivos_largo['Préstamos Bancarios'],
+                             "","","","","",
+                             self.esf.capital_contable['Capital Contribuido'],
+                             self.esf.capital_contable['Capital Ganado'],
+                             utilidad_neta],
+                        "   ":["","","","","","","","",
+                               total_activo_circulante,
+                               "","","","","",
+                               total_activo_nocirculante,
+                               "",
+                               activo_total,
+                               "","","","","","","",
+                               total_corto_plazo,
+                               "","","",
+                               total_largo_plazo,
+                               "",
+                               total_pasivo,
+                               "","","","","",
+                               capital,"",
+                               pasivo_capital]}
+            print(tabulate(tabla_bl, headers="keys", tablefmt="rounded_grid",floatfmt=".2f"))
+
+
 
