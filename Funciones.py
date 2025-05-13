@@ -108,7 +108,7 @@ def validar_cantidad(cuenta):
 
 def nueva_cuenta():
     while True:
-        nombre = input("Nombre de la cuenta: ").strip().upper()
+        nombre = input("Nombre de la cuenta: ").strip()
         cantidad = validar_cantidad(nombre)
         print(f"{nombre}: ${cantidad}")
         while True:
@@ -516,7 +516,7 @@ def obtener_gastosAyV():
         print("2. Datos de sueldos y salarios")
         print("3. Procentaje de comisiones")
         print("4. Datos de gastos varios")
-        print("5. Datos de intereses por obligaciones")
+        print("5. Datos de intereses por Prestamo")
         print("6. Terminar")
         opcion = input("Opcion: ")
         match opcion:
@@ -540,7 +540,7 @@ def obtener_gastosAyV():
                 cantidad = cantidades_SoA(periodo, "Varios")
                 gastos_ayv.set_varios(cantidad)
             case '5':
-                print("Ingresar los datos de intereses por obligaciones")
+                print("Ingresar los datos de intereses por prestamo")
                 periodo = anual_o_semestral()
                 cantidad = cantidades_SoA(periodo, "Intereses por obligaciones")
                 gastos_ayv.set_intereses(cantidad)
